@@ -1,0 +1,133 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+/*
+ * Tailwind v4 uses a custom variant to opt into class-based dark mode
+ * (instead of the default prefers-color-scheme media query). Any child of
+ * an element with `.dark` — or the `.dark` element itself — activates the
+ * `dark:` variant. The `:where(...)` wrapper keeps specificity at 0 so
+ * these overrides don't fight ordinary utility classes.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Theme tokens.
+ *
+ * Node fills/borders/text and every "chrome" color live here as CSS
+ * variables so a theme switch is *pure CSS* — no re-render, no component
+ * awareness of the theme. Node style objects reference these via
+ * `var(--…)`; App / DetailPanel / ContextMenu use Tailwind `dark:` variants.
+ *
+ * When you add a new node type, add both its light and dark tokens here.
+ * If you find yourself wanting to override a color inline, resist — add
+ * a token first so the theme system stays in one place.
+ */
+:root {
+  color-scheme: light;
+
+  /* App chrome */
+  --app-bg: #f7f7f8;
+  --app-fg: #1a1a1a;
+
+  /* Node palette — light mode: pastel fills, dark text, saturated borders. */
+  --node-workflow-bg: #FEF3C7;
+  --node-workflow-text: #78350F;
+  --node-workflow-border: #D97706;
+
+  --node-agent-bg: #DBEAFE;
+  --node-agent-text: #1E3A8A;
+  --node-agent-border: #2563EB;
+
+  --node-model-bg: #EDE9FE;
+  --node-model-text: #4C1D95;
+  --node-model-border: #7C3AED;
+
+  --node-tool-bg: #D1FAE5;
+  --node-tool-text: #064E3B;
+  --node-tool-border: #059669;
+
+  --node-prompt-bg: #FCE7F3;
+  --node-prompt-text: #831843;
+  --node-prompt-border: #DB2777;
+
+  --node-user-bg: #F3F4F6;
+  --node-user-text: #111827;
+  --node-user-border: #4B5563;
+
+  --node-file-bg: #E0F2FE;
+  --node-file-text: #0C4A6E;
+  --node-file-border: #0284C7;
+
+  --node-function-bg: #FEE2E2;
+  --node-function-text: #7F1D1D;
+  --node-function-border: #DC2626;
+
+  --node-endpoint-bg: #FFEDD5;
+  --node-endpoint-text: #7C2D12;
+  --node-endpoint-border: #EA580C;
+
+  /* Edge colors — same in both themes; the borders/bgs give enough contrast. */
+  --edge-uses: #2563EB;
+  --edge-owns: #4B5563;
+  --edge-contains: #0284C7;
+  --edge-delegates_to: #7C3AED;
+  --edge-implements: #059669;
+  --edge-calls: #DC2626;
+  --edge-exposes: #EA580C;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --app-bg: #0f0f11;
+  --app-fg: #f5f5f5;
+
+  /* Node palette — dark mode: near-black fills with the border-color tint
+     as text so each type reads at a glance without shouting. */
+  --node-workflow-bg: #2a1f0a;
+  --node-workflow-text: #FCD34D;
+  --node-workflow-border: #D97706;
+
+  --node-agent-bg: #0f1a2e;
+  --node-agent-text: #93C5FD;
+  --node-agent-border: #3B82F6;
+
+  --node-model-bg: #1c1030;
+  --node-model-text: #C4B5FD;
+  --node-model-border: #8B5CF6;
+
+  --node-tool-bg: #0b2a1e;
+  --node-tool-text: #6EE7B7;
+  --node-tool-border: #10B981;
+
+  --node-prompt-bg: #2b0f1d;
+  --node-prompt-text: #F9A8D4;
+  --node-prompt-border: #EC4899;
+
+  --node-user-bg: #1f1f22;
+  --node-user-text: #D4D4D8;
+  --node-user-border: #71717A;
+
+  --node-file-bg: #0a1f2e;
+  --node-file-text: #7DD3FC;
+  --node-file-border: #0EA5E9;
+
+  --node-function-bg: #2b0f0f;
+  --node-function-text: #FCA5A5;
+  --node-function-border: #EF4444;
+
+  --node-endpoint-bg: #2a180a;
+  --node-endpoint-text: #FDBA74;
+  --node-endpoint-border: #F97316;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--app-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background-color 120ms ease, color 120ms ease;
+}

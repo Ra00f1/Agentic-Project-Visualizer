@@ -1,0 +1,53 @@
+[project]
+name = "agentic-visualizer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Raoof Agh", email = "32569954+Ra00f1@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.141.1",
+    "motor>=3.7.1",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "uvicorn[standard]>=0.52.2",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.3.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "session"
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "TID"]
+ignore = ["E501"]  # line-length handled by formatter
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/agentic_visualizer"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["motor.*", "bson.*", "pymongo.*"]
+ignore_missing_imports = true

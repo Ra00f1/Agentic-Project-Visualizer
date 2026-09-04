@@ -1,0 +1,1352 @@
+{
+  "_meta": {
+    "note": "Fixture data for the Agentic Project Visualizer. Uses MongoDB Extended JSON v2 (mongoexport --jsonFormat=canonical) so `mongoimport --jsonArray` recreates ObjectId and Date types correctly. Handpicked ObjectIds so cross-references are readable at a glance: 0*=users, 1*=models, 2*=prompts, 3*=tools, 4*=agents, 5*=workflows, 6*=files.",
+    "generated_by": "hand",
+    "generated_at": {
+      "$date": "2026-08-11T00:00:00Z"
+    }
+  },
+  "users": [
+    {
+      "_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "username": "alice",
+      "email": "alice@example.com",
+      "display_name": "Alice Chen",
+      "role": "researcher",
+      "team": "applied-ai",
+      "created_at": {
+        "$date": "2026-01-04T10:15:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-06-12T09:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/alice.png",
+      "preferences": {
+        "theme": "dark",
+        "notifications": true,
+        "default_model": {
+          "$oid": "100000000000000000000001"
+        }
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "username": "bob",
+      "email": "bob@example.com",
+      "display_name": "Bob Kirov",
+      "role": "engineer",
+      "team": "platform",
+      "created_at": {
+        "$date": "2026-02-01T14:22:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-30T08:44:00Z"
+      },
+      "avatar_url": null,
+      "preferences": {
+        "theme": "light",
+        "notifications": false,
+        "default_model": {
+          "$oid": "100000000000000000000002"
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "name": "gpt-4o-mini",
+      "provider": "openai",
+      "family": "gpt-4o",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "cost": {
+        "input_per_1k_usd": 0.15,
+        "output_per_1k_usd": 0.6,
+        "currency": "USD"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-05T11:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-05-10T15:30:00Z"
+      },
+      "tags": [
+        "fast",
+        "cheap",
+        "default"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "name": "claude-sonnet-4",
+      "provider": "anthropic",
+      "family": "claude-4",
+      "context_window": 200000,
+      "max_output_tokens": 32768,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "cost": {
+        "input_per_1k_usd": 3.0,
+        "output_per_1k_usd": 15.0,
+        "currency": "USD"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-01-05T11:05:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-01T09:12:00Z"
+      },
+      "tags": [
+        "reasoning",
+        "long-context"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "name": "llama-3-70b-instruct",
+      "provider": "self-hosted",
+      "family": "llama-3",
+      "context_window": 8192,
+      "max_output_tokens": 4096,
+      "supports_tools": false,
+      "supports_streaming": true,
+      "cost": {
+        "input_per_1k_usd": 0.0,
+        "output_per_1k_usd": 0.0,
+        "currency": "USD"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-14T00:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-14T00:00:00Z"
+      },
+      "tags": [
+        "open-source",
+        "local"
+      ]
+    }
+  ],
+  "prompts": [
+    {
+      "_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "name": "research_agent_system",
+      "role": "system",
+      "content": "You are a research agent. Use the provided tools to answer the user's question. Cite every fact you use. Never fabricate URLs.",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-10T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-04-22T16:11:00Z"
+      },
+      "variables": [
+        "user_question",
+        "max_sources"
+      ],
+      "tags": [
+        "system",
+        "research"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000002"
+      },
+      "name": "writer_agent_system",
+      "role": "system",
+      "content": "You are a writing agent. Draft long-form content grounded in the retrieved index. Match the requested tone. Every claim must be traceable to a source.",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-11T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-05-01T13:00:00Z"
+      },
+      "variables": [
+        "outline",
+        "tone",
+        "audience"
+      ],
+      "tags": [
+        "system",
+        "writing"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000003"
+      },
+      "name": "coordinator_system",
+      "role": "system",
+      "content": "You coordinate specialized sub-agents. Decide which sub-agent should handle the task, hand off the input verbatim, and combine their outputs into a single response.",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-02-05T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-02-05T10:00:00Z"
+      },
+      "variables": [
+        "available_agents"
+      ],
+      "tags": [
+        "system",
+        "orchestration"
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "_id": {
+        "$oid": "300000000000000000000001"
+      },
+      "name": "web_search",
+      "description": "Search the public web for a query.",
+      "framework": "langchain",
+      "module_path": "src.tools.langchain_tools",
+      "function_name": "web_search_tool",
+      "import_path": "src.tools.langchain_tools.web_search_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "max_results": {
+            "type": "integer",
+            "default": 5
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "network",
+        "search"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-15T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-06-01T09:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000002"
+      },
+      "name": "summarize_url",
+      "description": "Fetch a URL and return a short summary of its contents.",
+      "framework": "langchain",
+      "module_path": "src.tools.langchain_tools",
+      "function_name": "summarize_url_tool",
+      "import_path": "src.tools.langchain_tools.summarize_url_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "output_schema": {
+        "type": "string"
+      },
+      "tags": [
+        "network",
+        "summarization"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-15T09:05:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-01-15T09:05:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000003"
+      },
+      "name": "calculator",
+      "description": "Evaluate a simple arithmetic expression and return the numeric result.",
+      "framework": "langchain",
+      "module_path": "src.tools.langchain_tools",
+      "function_name": "calculator_tool",
+      "import_path": "src.tools.langchain_tools.calculator_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "expression": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expression"
+        ]
+      },
+      "output_schema": {
+        "type": "number"
+      },
+      "tags": [
+        "math"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-01-15T09:10:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-01-15T09:10:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000004"
+      },
+      "name": "document_query",
+      "description": "Retrieve top-k matching documents from a vector index.",
+      "framework": "llamaindex",
+      "module_path": "src.tools.llamaindex_tools",
+      "function_name": "_document_query",
+      "import_path": "src.tools.llamaindex_tools.document_query_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "index_name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "top_k": {
+            "type": "integer",
+            "default": 3
+          }
+        },
+        "required": [
+          "index_name",
+          "query"
+        ]
+      },
+      "output_schema": {
+        "type": "array"
+      },
+      "tags": [
+        "retrieval",
+        "vector"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-02-10T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-02-10T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000005"
+      },
+      "name": "index_ingest",
+      "description": "Add a new document to a vector index.",
+      "framework": "llamaindex",
+      "module_path": "src.tools.llamaindex_tools",
+      "function_name": "_index_ingest",
+      "import_path": "src.tools.llamaindex_tools.index_ingest_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_uri": {
+            "type": "string"
+          },
+          "index_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_uri",
+          "index_name"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "retrieval",
+        "ingest"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-02-10T12:05:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-02-10T12:05:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000006"
+      },
+      "name": "citation_lookup",
+      "description": "Return the citation metadata for a stored document.",
+      "framework": "llamaindex",
+      "module_path": "src.tools.llamaindex_tools",
+      "function_name": "_citation_lookup",
+      "import_path": "src.tools.llamaindex_tools.citation_lookup_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "retrieval",
+        "citation"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-02-10T12:10:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-02-10T12:10:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000007"
+      },
+      "name": "internal_search",
+      "description": "Search an internal knowledge-base corpus.",
+      "framework": "custom",
+      "module_path": "src.tools.custom_tools",
+      "function_name": "internal_search_tool",
+      "import_path": "src.tools.custom_tools.internal_search_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "corpus": {
+            "type": "string",
+            "default": "kb"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "search",
+        "internal"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-01T08:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-01T08:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000008"
+      },
+      "name": "file_read",
+      "description": "Read the contents of a file and return it as text.",
+      "framework": "custom",
+      "module_path": "src.tools.custom_tools",
+      "function_name": "file_read_tool",
+      "import_path": "src.tools.custom_tools.file_read_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "output_schema": {
+        "type": "string"
+      },
+      "tags": [
+        "filesystem"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-01T08:05:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-01T08:05:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000009"
+      },
+      "name": "file_write",
+      "description": "Write text to a file, optionally overwriting existing content.",
+      "framework": "custom",
+      "module_path": "src.tools.custom_tools",
+      "function_name": "file_write_tool",
+      "import_path": "src.tools.custom_tools.file_write_tool",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "contents": {
+            "type": "string"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "path",
+          "contents"
+        ]
+      },
+      "output_schema": {
+        "type": "boolean"
+      },
+      "tags": [
+        "filesystem"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-01T08:10:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-01T08:10:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000a"
+      },
+      "name": "missing_impl_tool",
+      "description": "DISTRACTOR: this tool references a function that does not exist in the codebase. The L2 scanner should surface it as an unresolved edge, NOT crash.",
+      "framework": "custom",
+      "module_path": "src.tools.custom_tools",
+      "function_name": "this_function_does_not_exist",
+      "import_path": "src.tools.custom_tools.this_function_does_not_exist",
+      "input_schema": {
+        "type": "object"
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "distractor",
+        "broken"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-02T08:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-02T08:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000b"
+      },
+      "name": "phantom_module_tool",
+      "description": "DISTRACTOR: this tool references a MODULE that does not exist in the codebase (src.integrations.nonexistent). The L2 scanner should report a 'module not found' warning against this tool, NOT crash and NOT silently drop it. Pair with missing_impl_tool which exercises the 'function not found in module' branch.",
+      "framework": "custom",
+      "module_path": "src.integrations.nonexistent",
+      "function_name": "phantom_function",
+      "import_path": "src.integrations.nonexistent.phantom_function",
+      "input_schema": {
+        "type": "object"
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "distractor",
+        "phantom-module"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-02T08:05:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-02T08:05:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000c"
+      },
+      "name": "moved_tool",
+      "description": "L2 FALLBACK EXERCISE: this tool's module_path points at an old location the code has moved out of. Direct dotted-path lookup fails; the codebase-wide name search finds it under src/skills/. Proves L2 doesn't require tool code to live in a folder named 'tools' or a file named '*_tools.py'.",
+      "framework": "custom",
+      "module_path": "src.tools.custom_tools",
+      "function_name": "format_output_tool",
+      "import_path": "src.tools.custom_tools.format_output_tool",
+      "input_schema": {
+        "type": "object"
+      },
+      "output_schema": {
+        "type": "string"
+      },
+      "tags": [
+        "formatting",
+        "moved-since-recorded"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-04-10T08:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-04-10T08:00:00Z"
+      }
+    }
+  ],
+  "agents": [
+    {
+      "_id": {
+        "$oid": "400000000000000000000001"
+      },
+      "name": "research_agent",
+      "display_name": "Research Agent",
+      "description": "Answers research questions using web search, URL summarization, and a calculator.",
+      "framework": "langchain",
+      "class_path": "src.agents.research_agent.ResearchAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        },
+        {
+          "$oid": "300000000000000000000002"
+        },
+        {
+          "$oid": "300000000000000000000003"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 6,
+        "verbose": false
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-02-01T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-10T14:00:00Z"
+      },
+      "tags": [
+        "research"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000002"
+      },
+      "name": "writer_agent",
+      "display_name": "Writer Agent",
+      "description": "Drafts long-form content grounded in an indexed corpus.",
+      "framework": "llamaindex",
+      "class_path": "src.agents.writer_agent.WriterAgent",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000002"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000004"
+        },
+        {
+          "$oid": "300000000000000000000005"
+        },
+        {
+          "$oid": "300000000000000000000006"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.6,
+        "max_iterations": 4,
+        "index_name": "articles"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-02-02T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-11T14:00:00Z"
+      },
+      "tags": [
+        "writing"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000003"
+      },
+      "name": "coordinator",
+      "display_name": "Coordinator",
+      "description": "Top-level orchestrator. Routes tasks to the research or writer agent and combines their outputs.",
+      "framework": "custom",
+      "class_path": "src.agents.coordinator_agent.CoordinatorAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000003"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000007"
+        },
+        {
+          "$oid": "300000000000000000000008"
+        },
+        {
+          "$oid": "300000000000000000000009"
+        },
+        {
+          "$oid": "30000000000000000000000a"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000001"
+        },
+        {
+          "$oid": "400000000000000000000002"
+        }
+      ],
+      "config": {
+        "temperature": 0.3,
+        "max_iterations": 3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-02-10T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-08-01T09:00:00Z"
+      },
+      "tags": [
+        "orchestration",
+        "root"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000004"
+      },
+      "name": "code_reviewer",
+      "display_name": "Code Reviewer",
+      "description": "Reviews pull requests for correctness, style, and security.",
+      "framework": "langchain",
+      "class_path": "src.agents.code_reviewer.CodeReviewerAgent",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        },
+        {
+          "$oid": "300000000000000000000008"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.1,
+        "max_iterations": 4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-03-01T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-01T09:00:00Z"
+      },
+      "tags": [
+        "quality",
+        "workflow-member"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000005"
+      },
+      "name": "summarizer",
+      "display_name": "Summarizer",
+      "description": "Condenses long articles into 3-paragraph summaries.",
+      "framework": "langchain",
+      "class_path": "src.agents.summarizer.SummarizerAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000002"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-03-05T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-05T09:00:00Z"
+      },
+      "tags": [
+        "workflow-member"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000006"
+      },
+      "name": "fact_checker",
+      "display_name": "Fact Checker",
+      "description": "Standalone agent that verifies claims against public web sources.",
+      "framework": "langchain",
+      "class_path": "src.agents.fact_checker.FactCheckerAgent",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        },
+        {
+          "$oid": "300000000000000000000002"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.0
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-10T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-10T09:00:00Z"
+      },
+      "tags": [
+        "orphan",
+        "standalone"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000007"
+      },
+      "name": "translator",
+      "display_name": "Translator",
+      "description": "Standalone agent that translates content between languages.",
+      "framework": "llamaindex",
+      "class_path": "src.agents.translator.TranslatorAgent",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000004"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.2,
+        "source_lang": "en",
+        "target_lang": "es"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-12T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-12T09:00:00Z"
+      },
+      "tags": [
+        "orphan",
+        "standalone"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000008"
+      },
+      "name": "data_analyst",
+      "display_name": "Data Analyst",
+      "description": "Standalone agent that runs SQL queries and generates charts.",
+      "framework": "custom",
+      "class_path": "src.agents.data_analyst.DataAnalystAgent",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000007"
+        },
+        {
+          "$oid": "300000000000000000000003"
+        },
+        {
+          "$oid": "30000000000000000000000b"
+        },
+        {
+          "$oid": "30000000000000000000000c"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.0,
+        "chart_type": "auto"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-15T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-15T09:00:00Z"
+      },
+      "tags": [
+        "orphan",
+        "standalone"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000009"
+      },
+      "name": "customer_support",
+      "display_name": "Customer Support",
+      "description": "Standalone agent that answers customer questions from a knowledge base.",
+      "framework": "llamaindex",
+      "class_path": "src.agents.customer_support.CustomerSupportAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000004"
+        },
+        {
+          "$oid": "300000000000000000000006"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-20T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-20T09:00:00Z"
+      },
+      "tags": [
+        "orphan",
+        "standalone"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000a"
+      },
+      "name": "archive_curator",
+      "display_name": "Archive Curator",
+      "description": "Manages a large archive of raw documents. This is the agent used to demo the lazy-file-loading path \u2014 seed.py generates 1200 files attached to it.",
+      "framework": "custom",
+      "class_path": "src.agents.archive_curator.ArchiveCuratorAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000007"
+        },
+        {
+          "$oid": "300000000000000000000008"
+        },
+        {
+          "$oid": "300000000000000000000009"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.0,
+        "batch_size": 100,
+        "note": "See seed.py --bulk-files."
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-04-01T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-04-01T09:00:00Z"
+      },
+      "tags": [
+        "workflow-member",
+        "heavy-files"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000b"
+      },
+      "name": "content_moderator",
+      "display_name": "Content Moderator",
+      "description": "Flags policy-violating content for human review.",
+      "framework": "langchain",
+      "class_path": "src.agents.content_moderator.ContentModeratorAgent",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        },
+        {
+          "$oid": "300000000000000000000007"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.0,
+        "policies": [
+          "safety",
+          "spam"
+        ]
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-04-05T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-04-05T09:00:00Z"
+      },
+      "tags": [
+        "workflow-member"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "_id": {
+        "$oid": "500000000000000000000001"
+      },
+      "name": "research_and_write",
+      "display_name": "Research and Write",
+      "description": "End-to-end pipeline that researches a topic and drafts an article about it.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000003"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000003"
+        },
+        {
+          "$oid": "400000000000000000000001"
+        },
+        {
+          "$oid": "400000000000000000000002"
+        },
+        {
+          "$oid": "400000000000000000000004"
+        },
+        {
+          "$oid": "400000000000000000000005"
+        },
+        {
+          "$oid": "40000000000000000000000a"
+        },
+        {
+          "$oid": "40000000000000000000000b"
+        }
+      ],
+      "model_ids": [
+        {
+          "$oid": "100000000000000000000001"
+        },
+        {
+          "$oid": "100000000000000000000002"
+        }
+      ],
+      "trigger": {
+        "kind": "manual"
+      },
+      "schedule": null,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-02-15T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-20T12:00:00Z"
+      },
+      "tags": [
+        "primary"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000002"
+      },
+      "name": "nightly_cleanup",
+      "display_name": "Nightly cleanup",
+      "description": "Purges stale documents each night. Uses an LLM directly (no coordinator agent) to summarize what it deleted.",
+      "entrypoint_agent_id": null,
+      "agent_ids": [],
+      "model_ids": [
+        {
+          "$oid": "100000000000000000000003"
+        }
+      ],
+      "trigger": {
+        "kind": "schedule"
+      },
+      "schedule": {
+        "cron": "0 3 * * *",
+        "timezone": "UTC"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-03-05T09:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-03-05T09:00:00Z"
+      },
+      "tags": [
+        "housekeeping",
+        "no-agent"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "_id": {
+        "$oid": "600000000000000000000001"
+      },
+      "name": "product_spec.md",
+      "path": "/uploads/product_spec.md",
+      "size_bytes": 18432,
+      "mime_type": "text/markdown",
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "workflow_id": {
+        "$oid": "500000000000000000000001"
+      },
+      "checksum_sha256": "9b74c9897bac770ffc029102a200c5de8f5b2b8f7d1e2b0e5d8f3c1a0b9c7d4e",
+      "created_at": {
+        "$date": "2026-06-01T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-06-01T10:00:00Z"
+      },
+      "tags": [
+        "spec"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000002"
+      },
+      "name": "dataset.csv",
+      "path": "/uploads/dataset.csv",
+      "size_bytes": 2451236,
+      "mime_type": "text/csv",
+      "owner_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "workflow_id": null,
+      "checksum_sha256": "1a2b3c4d5e6f70819283a4b5c6d7e8f9010203040506070809aabbccddeeff00",
+      "created_at": {
+        "$date": "2026-06-05T14:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-06-05T14:00:00Z"
+      },
+      "tags": [
+        "data"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000003"
+      },
+      "name": "final_report.pdf",
+      "path": "/outputs/final_report.pdf",
+      "size_bytes": 512400,
+      "mime_type": "application/pdf",
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "workflow_id": {
+        "$oid": "500000000000000000000001"
+      },
+      "checksum_sha256": "abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+      "created_at": {
+        "$date": "2026-07-25T16:20:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-07-25T16:20:00Z"
+      },
+      "tags": [
+        "output",
+        "report"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000004"
+      },
+      "name": "glossary_es.md",
+      "path": "/knowledge/glossary_es.md",
+      "size_bytes": 8172,
+      "mime_type": "text/markdown",
+      "owner_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "agent_id": {
+        "$oid": "400000000000000000000007"
+      },
+      "workflow_id": null,
+      "checksum_sha256": "1122334455667788112233445566778811223344556677881122334455667788",
+      "created_at": {
+        "$date": "2026-05-01T10:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-05-01T10:00:00Z"
+      },
+      "tags": [
+        "reference",
+        "agent-attached"
+      ]
+    }
+  ]
+}

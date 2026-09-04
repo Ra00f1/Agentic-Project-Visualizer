@@ -1,0 +1,70 @@
+# ---------------------------------------------------------------------------
+# Reports — kept locally, not shipped with the repo.
+# ---------------------------------------------------------------------------
+Agentic_Project_Visualizer_Report.docx
+Agentic_Project_Visualizer_Report_Addendum.md
+
+# ---------------------------------------------------------------------------
+# Node / Vite / Tauri front-end build artifacts
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.turbo/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.local
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+wheels/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage/
+
+# ---------------------------------------------------------------------------
+# Virtual envs / secrets
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Rust / Tauri
+# ---------------------------------------------------------------------------
+target/
+
+# ---------------------------------------------------------------------------
+# Editor / OS
+# ---------------------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
