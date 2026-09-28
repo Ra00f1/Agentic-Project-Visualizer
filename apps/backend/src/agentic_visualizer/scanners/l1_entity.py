@@ -179,6 +179,10 @@ class CollectionSpec:
 
     `node_type`  — every doc in the collection becomes a node of this type.
     `name_field` — which doc field holds the human-readable name.
+    `id_field`   — which doc field holds the primary key. Defaults to "_id"
+                   for Mongo; a user-mapped project might use "agent_uuid"
+                   or another convention. The scanner uses this to build
+                   node ids and provenance source_refs.
     `refs`       — foreign-key-like fields. Each entry says:
                    "field X on this doc points to collection Y with edge kind Z".
                    Values can be a single ObjectId or a list of ObjectIds; the
@@ -188,6 +192,7 @@ class CollectionSpec:
     node_type: NodeType
     name_field: str
     refs: tuple["RefSpec", ...] = ()
+    id_field: str = "_id"
 
 
 @dataclass(slots=True, frozen=True)
@@ -202,6 +207,14 @@ class RefSpec:
 
     kind: EdgeKind
     """Edge kind to emit. Must be one of the L1-vocabulary kinds."""
+
+    inverted: bool = False
+    """When True, the edge points from the TARGET back to the SOURCE at
+    emit time. Used for cases where the FK sits on the child but the
+    semantic direction is "parent contains child" — e.g. `files.workflow_id`
+    lives on the file but the workflow is what contains the file. Replaces
+    the older _INVERTED_REFS frozenset lookup, so user-mapped collections
+    can declare this via the field rather than being hardcoded in a set."""
 
 
 CollectionMapping = Mapping[str, CollectionSpec]
@@ -242,21 +255,16 @@ DEFAULT_COLLECTION_MAPPING: CollectionMapping = {
         refs=(
             # workflow_id: reverse-direction edge. The FIELD is on the file
             # but semantically the workflow *contains* the file, so we invert
-            # source/target when emitting. Handled explicitly in `_iter_refs`.
-            RefSpec(field="workflow_id", target_collection="workflows", kind="contains"),
+            # source/target when emitting. `inverted=True` says so declaratively.
+            RefSpec(
+                field="workflow_id",
+                target_collection="workflows",
+                kind="contains",
+                inverted=True,
+            ),
         ),
     ),
 }
-
-# Ref specs whose semantic direction is "target → source" rather than
-# "source → target" (i.e. we invert when emitting the edge). Kept as a set
-# of `(collection, field)` pairs so the mapping stays declarative above and
-# the inversion logic is one lookup here.
-_INVERTED_REFS: frozenset[tuple[str, str]] = frozenset(
-    {
-        ("files", "workflow_id"),
-    }
-)
 
 
 # --- Node ID helpers -------------------------------------------------------
@@ -357,13 +365,20 @@ class L1EntityScanner:
             if collection_name in effective_lazy:
                 continue
             async for doc in context.connector.stream_rows(collection_name):
-                doc_id = doc.get("_id")
+                # Primary key comes from `spec.id_field` — defaults to "_id"
+                # so behavior is unchanged for the mock fixture, but a user
+                # who mapped their collection to id_field="agent_uuid" gets
+                # THAT read here.
+                doc_id = doc.get(spec.id_field)
                 if doc_id is None:
                     errors.append(
                         ScanError(
                             scanner=self.name,
-                            source_ref=f"{self._db_name}.{collection_name}:<no _id>",
-                            message=f"Document in {collection_name!r} has no _id; skipping.",
+                            source_ref=f"{self._db_name}.{collection_name}:<no {spec.id_field}>",
+                            message=(
+                                f"Document in {collection_name!r} has no "
+                                f"{spec.id_field!r} field; skipping."
+                            ),
                         )
                     )
                     continue
@@ -398,7 +413,7 @@ class L1EntityScanner:
                         type=spec.node_type,
                         name=str(name),
                         provenance=provenance,
-                        attributes=_sanitize_attributes(doc),
+                        attributes=_sanitize_attributes(doc, spec.id_field),
                     )
                 )
 
@@ -419,9 +434,12 @@ class L1EntityScanner:
 
                     for target_oid in _iter_ref_values(doc.get(ref.field)):
                         target_id = _node_id(self._db_name, ref.target_collection, target_oid)
-                        inverted = (collection_name, ref.field) in _INVERTED_REFS
+                        # `ref.inverted` (declared on the RefSpec) tells us
+                        # whether the semantic direction runs opposite to
+                        # where the FK physically sits. Used for `contains`
+                        # (file → workflow FK, but workflow contains file).
                         source_id, dest_id = (
-                            (target_id, node_id) if inverted else (node_id, target_id)
+                            (target_id, node_id) if ref.inverted else (node_id, target_id)
                         )
                         edges.append(
                             Edge(
@@ -515,7 +533,7 @@ def _iter_ref_values(value: Any) -> Iterable[ObjectId | str]:
     yield value if isinstance(value, ObjectId) else str(value)
 
 
-def _sanitize_attributes(doc: dict[str, Any]) -> dict[str, Any]:
+def _sanitize_attributes(doc: dict[str, Any], id_field: str = "_id") -> dict[str, Any]:
     """Copy `doc` into a JSON-serializable dict for the Node.attributes payload.
 
     `ObjectId` and `datetime` are the two BSON types Pydantic v2 will serialize
@@ -524,12 +542,15 @@ def _sanitize_attributes(doc: dict[str, Any]) -> dict[str, Any]:
     proactively so the wire format is predictable and doesn't rely on Pydantic
     internals.
 
-    We DROP `_id` from attributes because it's already encoded into `Node.id`
-    and echoing it duplicates data in the detail panel.
+    We DROP the primary key from attributes because it's already encoded into
+    `Node.id` and echoing it duplicates data in the detail panel. `id_field`
+    defaults to "_id" so the mock fixture keeps its previous behavior; a user
+    who mapped their collection to id_field="agent_uuid" gets THAT dropped
+    instead.
     """
     out: dict[str, Any] = {}
     for key, value in doc.items():
-        if key == "_id":
+        if key == id_field:
             continue
         out[key] = _coerce(value)
     return out
@@ -544,3 +565,149 @@ def _coerce(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: _coerce(v) for k, v in value.items()}
     return value
+
+
+# --- User-mapping translation ---------------------------------------------
+
+
+# Roles the L1 scanner knows how to render. Kept as a set separate from
+# NodeType so we can filter out "other" (a UI-only sentinel meaning
+# "exclude this collection") without changing NodeType itself.
+_SCANNER_ROLES: frozenset[str] = frozenset(
+    {"workflow", "agent", "tool", "model", "prompt", "user", "file"}
+)
+
+
+def _resolve_target_collection(
+    field_name: str, role_to_collections: dict[str, list[str]], all_collections: Iterable[str]
+) -> str | None:
+    """From a ref field name, guess which collection its ObjectIds point at.
+
+    Uses the standard `<X>_id` / `<X>_ids` convention:
+
+      * agent_ids   → look for a collection with role "agent"
+                      (or, failing that, a collection literally named
+                      "agents" / "agent")
+      * sub_agent_ids → strip the "sub_" prefix, then same as above
+      * model_id    → collection with role "model"
+
+    Returns None when nothing matches — the ref is dropped at build time
+    and won't produce an edge. That's the correct behavior for a field
+    whose target the user hasn't mapped (or misspelled).
+    """
+    # Strip _id / _ids suffix.
+    if field_name.endswith("_ids"):
+        stem = field_name[:-4]
+    elif field_name.endswith("_id"):
+        stem = field_name[:-3]
+    else:
+        stem = field_name
+    # Strip common relationship prefixes ("sub_agent_ids" → "agent").
+    for prefix in ("sub_", "child_", "parent_", "entrypoint_"):
+        if stem.startswith(prefix):
+            stem = stem[len(prefix) :]
+            break
+    # 1) Match by role first — user's mapping is the source of truth.
+    colls_for_role = role_to_collections.get(stem)
+    if colls_for_role:
+        # If multiple collections share a role (rare but valid — two
+        # different agent tables), pick the first; users can override
+        # with more specific field names when it matters.
+        return colls_for_role[0]
+    # 2) Fall back to matching by literal collection name.
+    all_names = set(all_collections)
+    for candidate in (f"{stem}s", stem):
+        if candidate in all_names:
+            return candidate
+    return None
+
+
+def _pick_edge_kind(
+    field_name: str, source_role: str, target_role: str | None
+) -> tuple[EdgeKind, bool]:
+    """Return (kind, inverted) for a ref field.
+
+    Heuristic — kept identical in spirit to DEFAULT_COLLECTION_MAPPING:
+
+      * Fields containing "sub_" or the word "delegate" become
+        `delegates_to` (agent → agent, not-inverted).
+      * A ref on a `file` collection pointing at a workflow or agent
+        becomes `contains` with the direction inverted (parent contains
+        child, even though the FK sits on the child).
+      * Everything else is a plain `uses` edge.
+    """
+    if field_name.startswith("sub_") or "delegate" in field_name:
+        return ("delegates_to", False)
+    if source_role == "file" and target_role in ("workflow", "agent"):
+        return ("contains", True)
+    return ("uses", False)
+
+
+def build_mapping_from_ui(
+    ui_mapping: Mapping[str, Mapping[str, Any]],
+) -> CollectionMapping:
+    """Translate the frontend's per-collection UI mapping into a CollectionMapping.
+
+    Each UI entry is `{role, idField, nameField, parentRefFields}`; this
+    function turns it into a `CollectionSpec` plus a tuple of `RefSpec`s
+    the scanner already knows how to walk.
+
+    Two rules worth calling out:
+
+      1. **`role == "other"` is dropped entirely.** The UI uses "other" as
+         "exclude from the graph"; we honor that by omitting the collection
+         from the returned mapping, which makes it invisible to the scanner
+         AND to ref resolution (a ref pointing at an "other" collection
+         becomes unresolved).
+
+      2. **Ref targets are inferred, not declared.** The UI only asks the
+         user for the ref FIELD names — the target collection and edge
+         kind are derived by convention (`_resolve_target_collection`
+         and `_pick_edge_kind`). This keeps the UI simple; users who need
+         a non-conventional shape can still get one by naming their
+         fields conventionally in Mongo.
+
+    Called from `main.py` when POST /graph carries a `mapping` body.
+    """
+    # First pass: keep only entries with a scanner-known role, and build
+    # a reverse index role → [collection_name] for target resolution.
+    kept: dict[str, Mapping[str, Any]] = {}
+    role_to_collections: dict[str, list[str]] = {}
+    for coll_name, entry in ui_mapping.items():
+        role = entry.get("role")
+        if role not in _SCANNER_ROLES:
+            continue
+        kept[coll_name] = entry
+        role_to_collections.setdefault(role, []).append(coll_name)
+
+    out: dict[str, CollectionSpec] = {}
+    for coll_name, entry in kept.items():
+        role = entry["role"]
+        refs: list[RefSpec] = []
+        for field in entry.get("parentRefFields", []) or []:
+            if not isinstance(field, str) or not field:
+                continue
+            target = _resolve_target_collection(field, role_to_collections, kept.keys())
+            if target is None:
+                # Unresolved target — the scanner will silently omit the
+                # edge, which is the correct outcome for a ref whose
+                # target the user hasn't mapped.
+                continue
+            target_role_val = kept.get(target, {}).get("role")
+            target_role = target_role_val if isinstance(target_role_val, str) else None
+            kind, inverted = _pick_edge_kind(field, role, target_role)
+            refs.append(
+                RefSpec(
+                    field=field,
+                    target_collection=target,
+                    kind=kind,
+                    inverted=inverted,
+                )
+            )
+        out[coll_name] = CollectionSpec(
+            node_type=role,  # type: ignore[arg-type]  # role is validated above
+            name_field=str(entry.get("nameField") or "name"),
+            id_field=str(entry.get("idField") or "_id"),
+            refs=tuple(refs),
+        )
+    return out

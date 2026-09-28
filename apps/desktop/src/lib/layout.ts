@@ -225,6 +225,62 @@ export function layoutGraph(
     }
   }
 
+  // Second-pass collision resolution — CROSS-BUCKET.
+  //
+  // The bucket sweep above only compares nodes in the same X-bucket
+  // (80px wide). Two nodes at x=460 and x=530 land in buckets 6 and 7
+  // respectively — different buckets — but each is NODE_WIDTH (160)
+  // wide, so their bounding boxes overlap horizontally by 90px. When
+  // dagre's fan-in x-shift (above) pushes nodes into these adjacent-
+  // bucket positions AND their Y ranges also happen to overlap, they
+  // visually stack on top of each other. That's the "opening too many
+  // nodes in Compact overlaps them" bug.
+  //
+  // This pass fixes it by comparing every pair (i, j) whose X-intervals
+  // overlap by more than X_OVERLAP_THRESHOLD, and pushing the lower
+  // one down if their Y-intervals also overlap. It is deliberately
+  // Y-ONLY — we never touch X. Touching X is what caused the previous
+  // regression ("interval-overlap collision" with MIN_X_SEP = NODE_WIDTH-4
+  // re-narrowed the fan-in shift and grouped adjacent-rank nodes).
+  //
+  // Algorithm — one pass, y-sorted:
+  //   1. Sort all nodes by position.y ascending.
+  //   2. For each node `cur` (in Y order), look at every earlier `prev`
+  //      whose Y bottom is still within reach of `cur.y + MIN_Y_GAP`.
+  //   3. If `prev` also overlaps `cur` horizontally by > threshold, push
+  //      `cur` down so its top is MIN_Y_GAP below `prev`'s bottom.
+  //   4. Since `cur.y` only ever grows during this loop, later iterations
+  //      naturally see the updated position — no re-sort needed.
+  //
+  // Cost is O(n²) in the worst case but tight (early-break on Y distance);
+  // for the ~500-node target this runs in a few ms.
+  const X_OVERLAP_THRESHOLD = 30; // ignore edge-of-edge touches; only true overlap
+  const yOrdered = [...outNodes].sort((a, b) => a.position.y - b.position.y);
+  for (let i = 1; i < yOrdered.length; i++) {
+    const cur = yOrdered[i]!;
+    let pushTo = cur.position.y;
+    for (let j = i - 1; j >= 0; j--) {
+      const prev = yOrdered[j]!;
+      const prevBottom = prev.position.y + NODE_HEIGHT;
+      // Everything above this point is too far up to collide — because
+      // yOrdered is sorted, and cur's Y only grows, once we pass this
+      // gate for one j we've passed for all smaller j too.
+      if (prevBottom + MIN_Y_GAP <= cur.position.y) break;
+      // Horizontal overlap check.
+      const overlap =
+        Math.min(prev.position.x + NODE_WIDTH, cur.position.x + NODE_WIDTH) -
+        Math.max(prev.position.x, cur.position.x);
+      if (overlap <= X_OVERLAP_THRESHOLD) continue;
+      // Y collision. Take the max of every candidate — a `cur` colliding
+      // with two previous nodes must clear the lower of them.
+      const candidate = prevBottom + MIN_Y_GAP;
+      if (candidate > pushTo) pushTo = candidate;
+    }
+    if (pushTo > cur.position.y) {
+      cur.position = { x: cur.position.x, y: pushTo };
+    }
+  }
+
   return { nodes: outNodes, edges };
 }
 

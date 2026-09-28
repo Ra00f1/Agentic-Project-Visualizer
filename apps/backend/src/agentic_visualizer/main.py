@@ -30,8 +30,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Annotated, Any, AsyncIterator
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, ConfigDict, Field
 from pymongo.errors import PyMongoError
 
 from bson import ObjectId
@@ -53,7 +54,39 @@ from .scanners import (
     L3CallGraphScanner,
     ScanContext,
 )
-from .scanners.l1_entity import _singularize
+from .scanners.l1_entity import _singularize, build_mapping_from_ui
+
+
+# --- Request body for POST /graph -----------------------------------------
+
+
+class CollectionMappingEntryIn(BaseModel):
+    """One collection's mapping — matches the frontend's CollectionMappingEntry.
+
+    Extra=ignore so a UI that adds new keys later doesn't break the
+    endpoint; the scanner ignores anything it doesn't recognize.
+    """
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    role: str
+    id_field: str = Field(default="_id", alias="idField")
+    name_field: str = Field(default="name", alias="nameField")
+    parent_ref_fields: list[str] = Field(default_factory=list, alias="parentRefFields")
+
+
+class GraphRequest(BaseModel):
+    """POST /graph body. Every field maps to the equivalent GET query param
+    on the compat endpoint, plus `mapping` which GET can't carry cleanly."""
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    uri: str | None = None
+    db: str | None = None
+    collections: list[str] | None = None
+    codebase_root: str | None = Field(default=None, alias="codebaseRoot")
+    enable_l3: bool = Field(default=True, alias="enableL3")
+    mapping: dict[str, CollectionMappingEntryIn] | None = None
 
 logger = logging.getLogger("agentic_visualizer")
 
@@ -191,6 +224,85 @@ def create_app() -> FastAPI:
         else:
             mapping = DEFAULT_COLLECTION_MAPPING
 
+        return await _run_scan(
+            uri=uri,
+            db=db,
+            mapping=mapping,
+            codebase_root=codebase_root,
+            enable_l3=enable_l3,
+            settings=settings,
+        )
+
+    @app.post("/graph", response_model=Graph, response_model_by_alias=True)
+    async def post_graph(body: Annotated[GraphRequest, Body()]) -> Graph:
+        """POST /graph — richer configuration than GET can carry in query params.
+
+        The frontend uses this endpoint whenever it has a user-supplied
+        `mapping` (per-collection role + id_field + name_field +
+        parent_ref_fields). GET /graph is kept around for tests and for
+        the "no mapping picked yet" case — a defaulted request that
+        just uses DEFAULT_COLLECTION_MAPPING against the mock fixture.
+
+        Same response shape and same partial-success semantics as GET:
+        per-item scanner problems land in `graph.errors`; infrastructure
+        failures are 502s.
+        """
+        # Fill defaults with the same precedence as GET query params.
+        uri = body.uri or settings.default_mongo_uri
+        db = body.db or "mock_agent"
+        # Resolve the mapping: user-provided beats default.
+        if body.mapping is not None:
+            # Pydantic parsed each entry into CollectionMappingEntryIn;
+            # translate to the frontend-shaped dict `build_mapping_from_ui`
+            # expects (it takes plain mappings for testability).
+            ui_shape = {
+                name: {
+                    "role": entry.role,
+                    "idField": entry.id_field,
+                    "nameField": entry.name_field,
+                    "parentRefFields": entry.parent_ref_fields,
+                }
+                for name, entry in body.mapping.items()
+            }
+            mapping = build_mapping_from_ui(ui_shape)
+            # Then apply the "user selected a subset" filter on TOP of that.
+            if body.collections:
+                selected = set(body.collections)
+                mapping = {k: v for k, v in mapping.items() if k in selected}
+        else:
+            # No user mapping — default to the mock-fixture mapping,
+            # filtered by the collection selection if the user provided one.
+            if body.collections:
+                selected = set(body.collections)
+                mapping = {k: v for k, v in DEFAULT_COLLECTION_MAPPING.items() if k in selected}
+            else:
+                mapping = DEFAULT_COLLECTION_MAPPING
+
+        return await _run_scan(
+            uri=uri,
+            db=db,
+            mapping=mapping,
+            codebase_root=body.codebase_root,
+            enable_l3=body.enable_l3,
+            settings=settings,
+        )
+
+    async def _run_scan(
+        *,
+        uri: str,
+        db: str,
+        mapping: Any,
+        codebase_root: str | None,
+        enable_l3: bool,
+        settings: Any,
+    ) -> Graph:
+        """Shared scan orchestration for GET and POST /graph.
+
+        Runs L1 always, L2 when a codebase root is available, L3 after L2
+        when enable_l3 is true. Wraps everything in the same partial-
+        success semantics: scanner errors become ScanErrors on the Graph
+        instead of HTTP 5xx.
+        """
         try:
             async with MongoConnector(uri=uri, db_name=db) as connector:
                 scanner = L1EntityScanner(db_name=db, mapping=mapping)
@@ -198,13 +310,12 @@ def create_app() -> FastAPI:
                 l1_result = await scanner.scan(context)
                 results: list[ScanResult] = [l1_result]
 
-                # L2 is optional at the API level: the setup screen may not
-                # know a codebase root yet, and running only L1 is a valid
-                # mode. When a root is supplied, any adapter-construction
-                # failure (missing dir, not-a-dir) becomes ONE ScanError
-                # attributed to the l2_tool scanner, not an HTTP 5xx —
-                # partial success (L1 works, L2 didn't) is more useful than
-                # a hard failure.
+                # L2 is optional: the setup screen may not know a codebase
+                # root yet, and running only L1 is a valid mode. When a
+                # root is supplied, any adapter-construction failure
+                # (missing dir, not-a-dir) becomes ONE ScanError attributed
+                # to the l2_tool scanner, not an HTTP 5xx — partial success
+                # (L1 works, L2 didn't) is more useful than a hard failure.
                 effective_root = codebase_root or settings.default_codebase_root
                 if effective_root:
                     try:
@@ -231,18 +342,15 @@ def create_app() -> FastAPI:
                         results.append(l2_result)
                         # L3 (call graph) runs on the same adapter so its
                         # AST cache is warm from L2. Opt-out via
-                        # ?enable_l3=false for pathological codebases.
+                        # enable_l3=false for pathological codebases.
                         if enable_l3:
                             l3_scanner = L3CallGraphScanner(codebase=adapter)
                             l3_result = await l3_scanner.scan(context)
                             results.append(l3_result)
                 else:
-                    # "Silent skip" is the confusing case — the frontend
-                    # shows no function nodes and the operator wonders
-                    # whether L2 ran. Emit one advisory ScanError when
-                    # tools exist in the graph but no codebase root was
-                    # configured. Feeds the header warnings pill so the
-                    # user sees "L2 is off" without having to dig.
+                    # "Silent skip" — emit an advisory ScanError when tools
+                    # exist but no codebase root was configured. Feeds the
+                    # header warnings pill so the user sees "L2 is off".
                     tool_count = sum(1 for n in l1_result.nodes if n.type == "tool")
                     if tool_count > 0:
                         results.append(
@@ -256,7 +364,7 @@ def create_app() -> FastAPI:
                                             f"L2 not configured: {tool_count} tool(s) "
                                             "were scanned by L1 but no codebase root "
                                             "was supplied (set AGENTIC_DEFAULT_CODEBASE_ROOT "
-                                            "or pass ?codebaseRoot=... on /graph)."
+                                            "or pass codebaseRoot on /graph)."
                                         ),
                                     )
                                 ],
@@ -265,9 +373,6 @@ def create_app() -> FastAPI:
 
                 return Graph.from_results(results)
         except PyMongoError as exc:
-            # Log the full exception server-side (for the sidecar console) but
-            # surface a tight message to the client — the frontend UI shows this
-            # in a toast, not a stack trace.
             logger.exception("Mongo scan failed for db=%s uri=%s", db, uri)
             raise HTTPException(status_code=502, detail=f"Mongo error: {exc}") from exc
 

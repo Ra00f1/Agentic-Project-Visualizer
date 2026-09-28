@@ -10,7 +10,7 @@
  * change lands.
  */
 
-import type { CollectionSchema, Graph } from "@shared-types/graph";
+import type { CollectionMappingEntry, CollectionSchema, Graph } from "@shared-types/graph";
 
 const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 
@@ -28,6 +28,12 @@ export interface FetchGraphParams {
    *  the graph carries a single advisory ScanError explaining L2 was
    *  skipped. Frontend supplies this from the Setup screen. */
   codebaseRoot?: string;
+  /** Per-collection mapping the user set on the Setup screen. Omit to fall
+   *  back to the backend's DEFAULT_COLLECTION_MAPPING (mock-fixture shape).
+   *  Present values are keyed by collection name; every entry declares the
+   *  collection's role, id field, name field, and parent-reference fields.
+   *  Entries with role === "other" are dropped server-side. */
+  mapping?: Record<string, CollectionMappingEntry>;
   /** Override the sidecar base URL. Only useful in tests. */
   baseUrl?: string;
   /** AbortSignal so a long scan can be cancelled if the user navigates away. */
@@ -114,46 +120,66 @@ export async function fetchSchema({
 }
 
 /**
- * GET /graph → typed `Graph`.
+ * POST /graph → typed `Graph`.
  *
- * Throws on network failure or non-2xx. The error message includes the status
- * code and the backend's `detail` field when present — good enough for a v1
- * error toast; we'll structure it properly when we build the error UI.
+ * Body carries the URI, DB, selected collections, optional codebase root,
+ * and the user's per-collection mapping. POST (rather than GET query
+ * params) because the mapping object grows past query-string sanity
+ * pretty fast — a real project with 20 collections × 4 fields each is
+ * already awkward as URL args.
+ *
+ * The backend still accepts GET /graph for backward compatibility (used
+ * only by tests today), but the app always POSTs.
+ *
+ * Throws on network failure or non-2xx. The error message includes the
+ * status code and the backend's `detail` field when present.
  */
 export async function fetchGraph({
   uri,
   db,
   collections,
   codebaseRoot,
+  mapping,
   baseUrl = DEFAULT_BASE_URL,
   signal,
 }: FetchGraphParams): Promise<Graph> {
   const url = new URL("/graph", baseUrl);
-  url.searchParams.set("uri", uri);
-  url.searchParams.set("db", db);
+  const body: Record<string, unknown> = { uri, db };
   if (collections && collections.length > 0) {
-    // Server-side splits on comma and trims; joining here keeps the URL
-    // shorter than an array-style repeated query param.
-    url.searchParams.set("collections", collections.join(","));
+    body.collections = collections;
   }
   if (codebaseRoot && codebaseRoot.trim().length > 0) {
-    // Explicit param beats the AGENTIC_DEFAULT_CODEBASE_ROOT env var
-    // server-side, so a running uvicorn without the env var still gets
-    // L2 whenever the frontend passes a path.
-    url.searchParams.set("codebaseRoot", codebaseRoot.trim());
+    body.codebaseRoot = codebaseRoot.trim();
+  }
+  if (mapping) {
+    // Strip "other"-role entries client-side too. Backend does it again
+    // (belt-and-suspenders), but sending them just wastes bytes and hides
+    // the user's intent in the wire log.
+    const filtered: Record<string, CollectionMappingEntry> = {};
+    for (const [name, entry] of Object.entries(mapping)) {
+      if (entry.role !== "other") filtered[name] = entry;
+    }
+    if (Object.keys(filtered).length > 0) {
+      body.mapping = filtered;
+    }
   }
 
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
   if (!response.ok) {
     // Try to surface the backend's structured detail; fall back to raw text.
     let detail = response.statusText;
     try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
+      const errBody = (await response.json()) as { detail?: string };
+      if (errBody.detail) detail = errBody.detail;
     } catch {
       // Response wasn't JSON — keep the statusText fallback.
     }
-    throw new Error(`GET /graph failed (${response.status}): ${detail}`);
+    throw new Error(`POST /graph failed (${response.status}): ${detail}`);
   }
   return (await response.json()) as Graph;
 }

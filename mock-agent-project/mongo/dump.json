@@ -54,6 +54,174 @@
           "$oid": "100000000000000000000002"
         }
       }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000003"
+      },
+      "username": "bob",
+      "email": "bob@example.com",
+      "display_name": "Bob Nakamura",
+      "role": "engineer",
+      "team": "platform",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/bob.png",
+      "preferences": {
+        "theme": "light",
+        "notifications": false
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000004"
+      },
+      "username": "carol",
+      "email": "carol@example.com",
+      "display_name": "Carol Petrov",
+      "role": "pm",
+      "team": "product",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/carol.png",
+      "preferences": {
+        "theme": "dark",
+        "notifications": true
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000005"
+      },
+      "username": "dan",
+      "email": "dan@example.com",
+      "display_name": "Dan O'Sullivan",
+      "role": "engineer",
+      "team": "platform",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/dan.png",
+      "preferences": {
+        "theme": "light",
+        "notifications": true
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000006"
+      },
+      "username": "eva",
+      "email": "eva@example.com",
+      "display_name": "Eva Weiss",
+      "role": "researcher",
+      "team": "applied-ai",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/eva.png",
+      "preferences": {
+        "theme": "dark",
+        "notifications": false
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000007"
+      },
+      "username": "felix",
+      "email": "felix@example.com",
+      "display_name": "Felix Andrade",
+      "role": "engineer",
+      "team": "infra",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/felix.png",
+      "preferences": {
+        "theme": "light",
+        "notifications": true
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000008"
+      },
+      "username": "greta",
+      "email": "greta@example.com",
+      "display_name": "Greta Lindqvist",
+      "role": "designer",
+      "team": "product",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/greta.png",
+      "preferences": {
+        "theme": "dark",
+        "notifications": true
+      }
+    },
+    {
+      "_id": {
+        "$oid": "000000000000000000000009"
+      },
+      "username": "hiro",
+      "email": "hiro@example.com",
+      "display_name": "Hiro Tanaka",
+      "role": "engineer",
+      "team": "applied-ai",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/hiro.png",
+      "preferences": {
+        "theme": "light",
+        "notifications": false
+      }
+    },
+    {
+      "_id": {
+        "$oid": "00000000000000000000000a"
+      },
+      "username": "iris",
+      "email": "iris@example.com",
+      "display_name": "Iris Achterberg",
+      "role": "manager",
+      "team": "product",
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "avatar_url": "https://example.com/avatars/iris.png",
+      "preferences": {
+        "theme": "dark",
+        "notifications": true
+      }
     }
   ],
   "models": [
@@ -147,6 +315,151 @@
         "open-source",
         "local"
       ]
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "name": "claude-opus-4",
+      "provider": "anthropic",
+      "family": "claude-opus",
+      "context_window": 200000,
+      "max_output_tokens": 32768,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "claude-opus",
+        "anthropic"
+      ],
+      "cost": {
+        "input_per_1k_usd": 15.0,
+        "output_per_1k_usd": 75.0,
+        "currency": "USD"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "name": "gemini-2-pro",
+      "provider": "google",
+      "family": "gemini-2",
+      "context_window": 1000000,
+      "max_output_tokens": 8192,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "gemini-2",
+        "google"
+      ],
+      "cost": {
+        "input_per_1k_usd": 3.5,
+        "output_per_1k_usd": 10.5,
+        "currency": "USD"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "name": "deepseek-coder-33b",
+      "provider": "deepseek",
+      "family": "deepseek",
+      "context_window": 16000,
+      "max_output_tokens": 4096,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "deepseek",
+        "deepseek"
+      ],
+      "cost": {
+        "input_per_1k_usd": 0.14,
+        "output_per_1k_usd": 0.28,
+        "currency": "USD"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "name": "local-mistral-7b",
+      "provider": "local",
+      "family": "mistral",
+      "context_window": 32000,
+      "max_output_tokens": 4096,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "mistral",
+        "local"
+      ],
+      "cost": {
+        "input_per_1k_usd": 0.0,
+        "output_per_1k_usd": 0.0,
+        "currency": "USD"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "name": "fine-tuned-support-v3",
+      "provider": "openai",
+      "family": "gpt-4o",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "supports_tools": true,
+      "supports_streaming": true,
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "gpt-4o",
+        "openai"
+      ]
     }
   ],
   "prompts": [
@@ -227,6 +540,555 @@
         "system",
         "orchestration"
       ]
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "name": "customer_support_system",
+      "role": "system",
+      "version": 5,
+      "owner_id": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "You are a customer support agent. Be polite, factual, brief."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "name": "code_reviewer_system",
+      "role": "system",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "You are a senior engineer. Review code for correctness, security, style."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "name": "data_extractor_system",
+      "role": "system",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Extract structured JSON matching the schema. No prose."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000007"
+      },
+      "name": "translator_system",
+      "role": "system",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Translate the user text to {{target_language}}. Preserve tone."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000008"
+      },
+      "name": "sentiment_classifier",
+      "role": "system",
+      "version": 4,
+      "owner_id": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Classify the input text sentiment as positive, neutral, or negative."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000009"
+      },
+      "name": "fraud_detector_system",
+      "role": "system",
+      "version": 5,
+      "owner_id": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Given a transaction, flag suspicious patterns. Be conservative."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000a"
+      },
+      "name": "content_moderator",
+      "role": "system",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Flag content violating: hate, violence, sexual, self-harm categories."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000b"
+      },
+      "name": "meeting_notes_system",
+      "role": "system",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Summarize the meeting into: decisions, action items, open questions."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000c"
+      },
+      "name": "email_triage_system",
+      "role": "system",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Route the email to: urgent, followup, newsletter, spam."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000d"
+      },
+      "name": "recommender_system",
+      "role": "system",
+      "version": 4,
+      "owner_id": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Recommend {{k}} products similar to the user's history."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000e"
+      },
+      "name": "batch_analyzer_system",
+      "role": "system",
+      "version": 5,
+      "owner_id": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Process the batch of records; emit a summary per record."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000000f"
+      },
+      "name": "disaster_recovery_system",
+      "role": "system",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "You are a runbook executor. Follow steps exactly. Never improvise."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000010"
+      },
+      "name": "archive_curator_system",
+      "role": "system",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "You maintain document archives. Suggest tag additions."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000011"
+      },
+      "name": "citation_verifier_system",
+      "role": "system",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Verify each citation against the source. Return citation status."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000012"
+      },
+      "name": "brand_voice_editor",
+      "role": "system",
+      "version": 4,
+      "owner_id": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Edit the copy to match our brand voice guide: friendly, direct, no jargon."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000013"
+      },
+      "name": "legal_screener",
+      "role": "system",
+      "version": 5,
+      "owner_id": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Screen the text for legal risk: PII, defamation, IP violations."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000014"
+      },
+      "name": "code_documenter",
+      "role": "system",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Add docstrings to Python functions matching NumPy style."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000015"
+      },
+      "name": "bug_reproducer",
+      "role": "system",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Given a bug report, reproduce it locally. Return a minimal repro."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000016"
+      },
+      "name": "dependency_upgrader",
+      "role": "system",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Suggest safe minor-version upgrades. List breaking changes."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000017"
+      },
+      "name": "release_notes_writer",
+      "role": "system",
+      "version": 4,
+      "owner_id": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Write release notes from a list of PRs. Group by user-facing / infra."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000018"
+      },
+      "name": "chart_summarizer",
+      "role": "system",
+      "version": 5,
+      "owner_id": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Describe the chart in one paragraph. Cite the highest and lowest."
+    },
+    {
+      "_id": {
+        "$oid": "200000000000000000000019"
+      },
+      "name": "policy_qa_system",
+      "role": "system",
+      "version": 1,
+      "owner_id": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Answer policy questions using only the provided policy docs. Cite section numbers."
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000001a"
+      },
+      "name": "very_long_prompt_edge_case",
+      "role": "system",
+      "version": 2,
+      "owner_id": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "You are a specialized agent. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. Follow these instructions carefully. "
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000001b"
+      },
+      "name": "orphan_prompt_no_content",
+      "role": "system",
+      "version": 3,
+      "owner_id": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "20000000000000000000001c"
+      },
+      "name": "draft_prompt_v0",
+      "role": "system",
+      "version": 0,
+      "owner_id": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "variables": [],
+      "tags": [
+        "system"
+      ],
+      "content": "Draft — not for production use."
     }
   ],
   "tools": [
@@ -687,6 +1549,1776 @@
       "updated_at": {
         "$date": "2026-04-10T08:00:00Z"
       }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000d"
+      },
+      "name": "fetch_price",
+      "description": "Fetch price.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "fetch_price",
+      "import_path": "src.tools.fanout_tools.fetch_price",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000e"
+      },
+      "name": "fetch_stock",
+      "description": "Fetch stock.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "fetch_stock",
+      "import_path": "src.tools.fanout_tools.fetch_stock",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000000f"
+      },
+      "name": "fetch_reviews",
+      "description": "Fetch reviews.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "fetch_reviews",
+      "import_path": "src.tools.fanout_tools.fetch_reviews",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000010"
+      },
+      "name": "fetch_specs",
+      "description": "Fetch specs.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "fetch_specs",
+      "import_path": "src.tools.fanout_tools.fetch_specs",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000011"
+      },
+      "name": "compute_discount",
+      "description": "Compute discount.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "compute_discount",
+      "import_path": "src.tools.fanout_tools.compute_discount",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000012"
+      },
+      "name": "compute_shipping",
+      "description": "Compute shipping.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "compute_shipping",
+      "import_path": "src.tools.fanout_tools.compute_shipping",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000013"
+      },
+      "name": "compute_tax",
+      "description": "Compute tax.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "compute_tax",
+      "import_path": "src.tools.fanout_tools.compute_tax",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000014"
+      },
+      "name": "compute_total",
+      "description": "Compute total.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "compute_total",
+      "import_path": "src.tools.fanout_tools.compute_total",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000015"
+      },
+      "name": "send_email",
+      "description": "Send email.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "send_email",
+      "import_path": "src.tools.fanout_tools.send_email",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000016"
+      },
+      "name": "send_sms",
+      "description": "Send sms.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "send_sms",
+      "import_path": "src.tools.fanout_tools.send_sms",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000017"
+      },
+      "name": "send_push",
+      "description": "Send push.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "send_push",
+      "import_path": "src.tools.fanout_tools.send_push",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000018"
+      },
+      "name": "send_webhook",
+      "description": "Send webhook.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "send_webhook",
+      "import_path": "src.tools.fanout_tools.send_webhook",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000019"
+      },
+      "name": "log_event",
+      "description": "Log event.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "log_event",
+      "import_path": "src.tools.fanout_tools.log_event",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001a"
+      },
+      "name": "log_error",
+      "description": "Log error.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "log_error",
+      "import_path": "src.tools.fanout_tools.log_error",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001b"
+      },
+      "name": "log_metric",
+      "description": "Log metric.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "log_metric",
+      "import_path": "src.tools.fanout_tools.log_metric",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001c"
+      },
+      "name": "log_audit",
+      "description": "Log audit.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "log_audit",
+      "import_path": "src.tools.fanout_tools.log_audit",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001d"
+      },
+      "name": "cache_get",
+      "description": "Cache get.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "cache_get",
+      "import_path": "src.tools.fanout_tools.cache_get",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001e"
+      },
+      "name": "cache_set",
+      "description": "Cache set.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "cache_set",
+      "import_path": "src.tools.fanout_tools.cache_set",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000001f"
+      },
+      "name": "cache_invalidate",
+      "description": "Cache invalidate.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "cache_invalidate",
+      "import_path": "src.tools.fanout_tools.cache_invalidate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000020"
+      },
+      "name": "queue_publish",
+      "description": "Queue publish.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "queue_publish",
+      "import_path": "src.tools.fanout_tools.queue_publish",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000021"
+      },
+      "name": "queue_consume",
+      "description": "Queue consume.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "queue_consume",
+      "import_path": "src.tools.fanout_tools.queue_consume",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000022"
+      },
+      "name": "queue_ack",
+      "description": "Queue ack.",
+      "framework": "custom",
+      "module_path": "src.tools.fanout_tools",
+      "function_name": "queue_ack",
+      "import_path": "src.tools.fanout_tools.queue_ack",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "fanout"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000023"
+      },
+      "name": "shared_audit_log",
+      "description": "Append an audit log entry. Called from many agents.",
+      "framework": "custom",
+      "module_path": "src.tools.shared_logging",
+      "function_name": "audit_log",
+      "import_path": "src.tools.shared_logging.audit_log",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string"
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "tags": [
+        "shared",
+        "logging"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000024"
+      },
+      "name": "async_fetch_url",
+      "description": "Async HTTP GET",
+      "framework": "custom",
+      "module_path": "src.tools.async_tools",
+      "function_name": "async_fetch_url",
+      "import_path": "src.tools.async_tools.async_fetch_url",
+      "tags": [
+        "async"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000025"
+      },
+      "name": "async_batch_query",
+      "description": "Batched DB reads",
+      "framework": "custom",
+      "module_path": "src.tools.async_tools",
+      "function_name": "async_batch_query",
+      "import_path": "src.tools.async_tools.async_batch_query",
+      "tags": [
+        "async"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000026"
+      },
+      "name": "classtool_load",
+      "description": "Class-based tool ClassTool.load",
+      "framework": "custom",
+      "module_path": "src.tools.class_tools",
+      "function_name": "ClassTool.load",
+      "import_path": "src.tools.class_tools.ClassTool.load",
+      "tags": [
+        "class-based"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000027"
+      },
+      "name": "classtool_parse_static",
+      "description": "Class-based tool ClassTool.parse_static",
+      "framework": "custom",
+      "module_path": "src.tools.class_tools",
+      "function_name": "ClassTool.parse_static",
+      "import_path": "src.tools.class_tools.ClassTool.parse_static",
+      "tags": [
+        "class-based"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000028"
+      },
+      "name": "lambda_add_one",
+      "description": "Tool defined as a lambda assigned to a module-level name.",
+      "framework": "custom",
+      "module_path": "src.tools.lambda_tools",
+      "function_name": "add_one",
+      "import_path": "src.tools.lambda_tools.add_one",
+      "tags": [
+        "lambda"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000029"
+      },
+      "name": "process_namespace_a",
+      "description": "Same function name in a different module (src.tools.namespace_a)",
+      "framework": "custom",
+      "module_path": "src.tools.namespace_a",
+      "function_name": "process",
+      "import_path": "src.tools.namespace_a.process",
+      "tags": [
+        "namespace-collision"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002a"
+      },
+      "name": "process_namespace_b",
+      "description": "Same function name in a different module (src.tools.namespace_b)",
+      "framework": "custom",
+      "module_path": "src.tools.namespace_b",
+      "function_name": "process",
+      "import_path": "src.tools.namespace_b.process",
+      "tags": [
+        "namespace-collision"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002b"
+      },
+      "name": "reexported_greeter",
+      "description": "Function is defined in _impl.py but imported via package __init__.",
+      "framework": "custom",
+      "module_path": "src.tools.reexport_pkg",
+      "function_name": "greet",
+      "import_path": "src.tools.reexport_pkg.greet",
+      "tags": [
+        "reexport"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002c"
+      },
+      "name": "missing_impl_alpha",
+      "description": "Points at a non-existent function (missing_impl_alpha).",
+      "framework": "custom",
+      "module_path": "src.tools.does_not_exist",
+      "function_name": "missing_impl_alpha",
+      "import_path": "src.tools.does_not_exist.missing_impl_alpha",
+      "tags": [
+        "unresolved-edge-case"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002d"
+      },
+      "name": "missing_impl_beta",
+      "description": "Points at a non-existent function (missing_impl_beta).",
+      "framework": "custom",
+      "module_path": "src.tools.does_not_exist",
+      "function_name": "missing_impl_beta",
+      "import_path": "src.tools.does_not_exist.missing_impl_beta",
+      "tags": [
+        "unresolved-edge-case"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002e"
+      },
+      "name": "missing_impl_gamma",
+      "description": "Points at a non-existent function (missing_impl_gamma).",
+      "framework": "custom",
+      "module_path": "src.tools.does_not_exist",
+      "function_name": "missing_impl_gamma",
+      "import_path": "src.tools.does_not_exist.missing_impl_gamma",
+      "tags": [
+        "unresolved-edge-case"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000002f"
+      },
+      "name": "missing_impl_delta",
+      "description": "Points at a non-existent function (missing_impl_delta).",
+      "framework": "custom",
+      "module_path": "src.tools.does_not_exist",
+      "function_name": "missing_impl_delta",
+      "import_path": "src.tools.does_not_exist.missing_impl_delta",
+      "tags": [
+        "unresolved-edge-case"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000030"
+      },
+      "name": "framework_null_tool",
+      "description": "Framework field is null — legacy record without adapter info.",
+      "framework": null,
+      "module_path": "src.tools.custom_tools",
+      "function_name": "internal_search_tool",
+      "import_path": "src.tools.custom_tools.internal_search_tool",
+      "tags": [],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000031"
+      },
+      "name": "check_order_status",
+      "description": "Check order status.",
+      "framework": "custom",
+      "module_path": "src.tools.customer_tools",
+      "function_name": "check_order_status",
+      "import_path": "src.tools.customer_tools.check_order_status",
+      "tags": [
+        "customer_tools"
+      ],
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000032"
+      },
+      "name": "issue_refund",
+      "description": "Issue refund.",
+      "framework": "custom",
+      "module_path": "src.tools.customer_tools",
+      "function_name": "issue_refund",
+      "import_path": "src.tools.customer_tools.issue_refund",
+      "tags": [
+        "customer_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000033"
+      },
+      "name": "lookup_customer",
+      "description": "Lookup customer.",
+      "framework": "custom",
+      "module_path": "src.tools.customer_tools",
+      "function_name": "lookup_customer",
+      "import_path": "src.tools.customer_tools.lookup_customer",
+      "tags": [
+        "customer_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000034"
+      },
+      "name": "escalate_to_human",
+      "description": "Escalate to human.",
+      "framework": "custom",
+      "module_path": "src.tools.customer_tools",
+      "function_name": "escalate_to_human",
+      "import_path": "src.tools.customer_tools.escalate_to_human",
+      "tags": [
+        "customer_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000035"
+      },
+      "name": "run_lint",
+      "description": "Run lint.",
+      "framework": "custom",
+      "module_path": "src.tools.code_tools",
+      "function_name": "run_lint",
+      "import_path": "src.tools.code_tools.run_lint",
+      "tags": [
+        "code_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000036"
+      },
+      "name": "run_tests",
+      "description": "Run tests.",
+      "framework": "custom",
+      "module_path": "src.tools.code_tools",
+      "function_name": "run_tests",
+      "import_path": "src.tools.code_tools.run_tests",
+      "tags": [
+        "code_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000037"
+      },
+      "name": "open_pr",
+      "description": "Open pr.",
+      "framework": "custom",
+      "module_path": "src.tools.code_tools",
+      "function_name": "open_pr",
+      "import_path": "src.tools.code_tools.open_pr",
+      "tags": [
+        "code_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000038"
+      },
+      "name": "code_diff",
+      "description": "Code diff.",
+      "framework": "custom",
+      "module_path": "src.tools.code_tools",
+      "function_name": "code_diff",
+      "import_path": "src.tools.code_tools.code_diff",
+      "tags": [
+        "code_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000039"
+      },
+      "name": "translate_text",
+      "description": "Translate text.",
+      "framework": "langchain",
+      "module_path": "src.tools.i18n_tools",
+      "function_name": "translate_text",
+      "import_path": "src.tools.i18n_tools.translate_text",
+      "tags": [
+        "i18n_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003a"
+      },
+      "name": "detect_language",
+      "description": "Detect language.",
+      "framework": "langchain",
+      "module_path": "src.tools.i18n_tools",
+      "function_name": "detect_language",
+      "import_path": "src.tools.i18n_tools.detect_language",
+      "tags": [
+        "i18n_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003b"
+      },
+      "name": "classify_sentiment",
+      "description": "Classify sentiment.",
+      "framework": "custom",
+      "module_path": "src.tools.nlp_tools",
+      "function_name": "classify_sentiment",
+      "import_path": "src.tools.nlp_tools.classify_sentiment",
+      "tags": [
+        "nlp_tools"
+      ],
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003c"
+      },
+      "name": "extract_entities",
+      "description": "Extract entities.",
+      "framework": "custom",
+      "module_path": "src.tools.nlp_tools",
+      "function_name": "extract_entities",
+      "import_path": "src.tools.nlp_tools.extract_entities",
+      "tags": [
+        "nlp_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003d"
+      },
+      "name": "score_toxicity",
+      "description": "Score toxicity.",
+      "framework": "custom",
+      "module_path": "src.tools.nlp_tools",
+      "function_name": "score_toxicity",
+      "import_path": "src.tools.nlp_tools.score_toxicity",
+      "tags": [
+        "nlp_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003e"
+      },
+      "name": "query_metrics",
+      "description": "Query metrics.",
+      "framework": "custom",
+      "module_path": "src.tools.observability",
+      "function_name": "query_metrics",
+      "import_path": "src.tools.observability.query_metrics",
+      "tags": [
+        "observability"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000003f"
+      },
+      "name": "query_traces",
+      "description": "Query traces.",
+      "framework": "custom",
+      "module_path": "src.tools.observability",
+      "function_name": "query_traces",
+      "import_path": "src.tools.observability.query_traces",
+      "tags": [
+        "observability"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000040"
+      },
+      "name": "query_logs",
+      "description": "Query logs.",
+      "framework": "custom",
+      "module_path": "src.tools.observability",
+      "function_name": "query_logs",
+      "import_path": "src.tools.observability.query_logs",
+      "tags": [
+        "observability"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000041"
+      },
+      "name": "scan_vulnerabilities",
+      "description": "Scan vulnerabilities.",
+      "framework": "custom",
+      "module_path": "src.tools.security_tools",
+      "function_name": "scan_vulnerabilities",
+      "import_path": "src.tools.security_tools.scan_vulnerabilities",
+      "tags": [
+        "security_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000042"
+      },
+      "name": "rotate_secret",
+      "description": "Rotate secret.",
+      "framework": "custom",
+      "module_path": "src.tools.security_tools",
+      "function_name": "rotate_secret",
+      "import_path": "src.tools.security_tools.rotate_secret",
+      "tags": [
+        "security_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000043"
+      },
+      "name": "audit_permissions",
+      "description": "Audit permissions.",
+      "framework": "custom",
+      "module_path": "src.tools.security_tools",
+      "function_name": "audit_permissions",
+      "import_path": "src.tools.security_tools.audit_permissions",
+      "tags": [
+        "security_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000044"
+      },
+      "name": "send_slack_message",
+      "description": "Send slack message.",
+      "framework": "custom",
+      "module_path": "src.tools.comms_tools",
+      "function_name": "send_slack",
+      "import_path": "src.tools.comms_tools.send_slack",
+      "tags": [
+        "comms_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000045"
+      },
+      "name": "send_teams_message",
+      "description": "Send teams message.",
+      "framework": "custom",
+      "module_path": "src.tools.comms_tools",
+      "function_name": "send_teams",
+      "import_path": "src.tools.comms_tools.send_teams",
+      "tags": [
+        "comms_tools"
+      ],
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000046"
+      },
+      "name": "book_calendar",
+      "description": "Book calendar.",
+      "framework": "custom",
+      "module_path": "src.tools.comms_tools",
+      "function_name": "book_calendar",
+      "import_path": "src.tools.comms_tools.book_calendar",
+      "tags": [
+        "comms_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000047"
+      },
+      "name": "upload_to_s3",
+      "description": "Upload to s3.",
+      "framework": "custom",
+      "module_path": "src.tools.storage_tools",
+      "function_name": "upload_to_s3",
+      "import_path": "src.tools.storage_tools.upload_to_s3",
+      "tags": [
+        "storage_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000048"
+      },
+      "name": "download_from_s3",
+      "description": "Download from s3.",
+      "framework": "custom",
+      "module_path": "src.tools.storage_tools",
+      "function_name": "download_from_s3",
+      "import_path": "src.tools.storage_tools.download_from_s3",
+      "tags": [
+        "storage_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "300000000000000000000049"
+      },
+      "name": "list_bucket",
+      "description": "List bucket.",
+      "framework": "custom",
+      "module_path": "src.tools.storage_tools",
+      "function_name": "list_bucket",
+      "import_path": "src.tools.storage_tools.list_bucket",
+      "tags": [
+        "storage_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000004a"
+      },
+      "name": "kv_get",
+      "description": "Kv get.",
+      "framework": "custom",
+      "module_path": "src.tools.kv_tools",
+      "function_name": "kv_get",
+      "import_path": "src.tools.kv_tools.kv_get",
+      "tags": [
+        "kv_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000004b"
+      },
+      "name": "kv_set",
+      "description": "Kv set.",
+      "framework": "custom",
+      "module_path": "src.tools.kv_tools",
+      "function_name": "kv_set",
+      "import_path": "src.tools.kv_tools.kv_set",
+      "tags": [
+        "kv_tools"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000004c"
+      },
+      "name": "query_analytics",
+      "description": "Query analytics.",
+      "framework": "custom",
+      "module_path": "src.tools.analytics",
+      "function_name": "query_analytics",
+      "import_path": "src.tools.analytics.query_analytics",
+      "tags": [
+        "analytics"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000004d"
+      },
+      "name": "run_experiment",
+      "description": "Run experiment.",
+      "framework": "custom",
+      "module_path": "src.tools.analytics",
+      "function_name": "run_experiment",
+      "import_path": "src.tools.analytics.run_experiment",
+      "tags": [
+        "analytics"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "30000000000000000000004e"
+      },
+      "name": "compute_cohort",
+      "description": "Compute cohort.",
+      "framework": "custom",
+      "module_path": "src.tools.analytics",
+      "function_name": "compute_cohort",
+      "import_path": "src.tools.analytics.compute_cohort",
+      "tags": [
+        "analytics"
+      ],
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
     }
   ],
   "agents": [
@@ -1072,7 +3704,7 @@
       },
       "name": "archive_curator",
       "display_name": "Archive Curator",
-      "description": "Manages a large archive of raw documents. This is the agent used to demo the lazy-file-loading path \u2014 seed.py generates 1200 files attached to it.",
+      "description": "Manages a large archive of raw documents. This is the agent used to demo the lazy-file-loading path — seed.py generates 1200 files attached to it.",
       "framework": "custom",
       "class_path": "src.agents.archive_curator.ArchiveCuratorAgent",
       "model_id": {
@@ -1149,6 +3781,2410 @@
       "tags": [
         "workflow-member"
       ]
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000c"
+      },
+      "name": "wide_fanout_orchestrator",
+      "display_name": "Wide Fanout Orchestrator",
+      "description": "Uses 22 tools. Stresses the compact/tiered layouts and the edge fan-out.",
+      "framework": "custom",
+      "class_path": "src.agents.wide_fanout_agent.WideFanoutOrchestrator",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000000d"
+        },
+        {
+          "$oid": "30000000000000000000000e"
+        },
+        {
+          "$oid": "30000000000000000000000f"
+        },
+        {
+          "$oid": "300000000000000000000010"
+        },
+        {
+          "$oid": "300000000000000000000011"
+        },
+        {
+          "$oid": "300000000000000000000012"
+        },
+        {
+          "$oid": "300000000000000000000013"
+        },
+        {
+          "$oid": "300000000000000000000014"
+        },
+        {
+          "$oid": "300000000000000000000015"
+        },
+        {
+          "$oid": "300000000000000000000016"
+        },
+        {
+          "$oid": "300000000000000000000017"
+        },
+        {
+          "$oid": "300000000000000000000018"
+        },
+        {
+          "$oid": "300000000000000000000019"
+        },
+        {
+          "$oid": "30000000000000000000001a"
+        },
+        {
+          "$oid": "30000000000000000000001b"
+        },
+        {
+          "$oid": "30000000000000000000001c"
+        },
+        {
+          "$oid": "30000000000000000000001d"
+        },
+        {
+          "$oid": "30000000000000000000001e"
+        },
+        {
+          "$oid": "30000000000000000000001f"
+        },
+        {
+          "$oid": "300000000000000000000020"
+        },
+        {
+          "$oid": "300000000000000000000021"
+        },
+        {
+          "$oid": "300000000000000000000022"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.0,
+        "max_iterations": 8
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000d"
+      },
+      "name": "deep_chain_L1",
+      "display_name": "Deep Chain Level 1",
+      "description": "Delegation chain node at depth 1. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL1",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "40000000000000000000000e"
+        }
+      ],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000e"
+      },
+      "name": "deep_chain_L2",
+      "display_name": "Deep Chain Level 2",
+      "description": "Delegation chain node at depth 2. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL2",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "40000000000000000000000f"
+        }
+      ],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000000f"
+      },
+      "name": "deep_chain_L3",
+      "display_name": "Deep Chain Level 3",
+      "description": "Delegation chain node at depth 3. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL3",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000010"
+        }
+      ],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000010"
+      },
+      "name": "deep_chain_L4",
+      "display_name": "Deep Chain Level 4",
+      "description": "Delegation chain node at depth 4. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL4",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000011"
+        }
+      ],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000011"
+      },
+      "name": "deep_chain_L5",
+      "display_name": "Deep Chain Level 5",
+      "description": "Delegation chain node at depth 5. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL5",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000012"
+        }
+      ],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000012"
+      },
+      "name": "deep_chain_L6",
+      "display_name": "Deep Chain Level 6",
+      "description": "Delegation chain node at depth 6. Tests progressive-disclosure BFS.",
+      "framework": "custom",
+      "class_path": "src.agents.deep_chain_agent.DeepChainL6",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.3
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000013"
+      },
+      "name": "cyclic_agent_a",
+      "display_name": "Cyclic Agent A",
+      "description": "Delegates to B. B delegates back to A. Should not crash the layout.",
+      "framework": "custom",
+      "class_path": "src.agents.cyclic_agents.CyclicA",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000014"
+        }
+      ],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000014"
+      },
+      "name": "cyclic_agent_b",
+      "display_name": "Cyclic Agent B",
+      "description": "Delegates back to A. Second half of the 2-cycle.",
+      "framework": "custom",
+      "class_path": "src.agents.cyclic_agents.CyclicB",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000013"
+        }
+      ],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000015"
+      },
+      "name": "self_delegating_agent",
+      "display_name": "Self Delegating Agent",
+      "description": "Delegates to ITSELF. Recursion guard territory.",
+      "framework": "custom",
+      "class_path": "src.agents.self_delegating.SelfDelegator",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000015"
+        }
+      ],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000016"
+      },
+      "name": "an_extremely_long_agent_name_that_should_visibly_truncate_when_the_graph_renders_because_nodes_show_only_the_first_line_of_the_name",
+      "display_name": "An Extremely Long Agent Name That Should Visibly Truncate When The Graph Renders Because Nodes Show Only The First Line Of The Name",
+      "description": "Tests label truncation. The name is 130 characters long.",
+      "framework": "custom",
+      "class_path": "src.agents.long_name.LongNameAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000017"
+      },
+      "name": "コード_レビュー_エージェント",
+      "display_name": "コード・レビュー・エージェント",
+      "description": "Unicode name — Japanese katakana. Tests text rendering, sorting, ID hashing.",
+      "framework": "custom",
+      "class_path": "src.agents.unicode_agent.UnicodeAgent",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000018"
+      },
+      "name": "verbose_description_agent",
+      "display_name": "Verbose Description Agent",
+      "description": "This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description. This agent has a deliberately verbose description.",
+      "framework": "custom",
+      "class_path": "src.agents.verbose_agent.VerboseAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000019"
+      },
+      "name": "broken_model_ref_agent",
+      "display_name": "Broken Model FK Agent",
+      "description": "model_id points at 199999... which does not exist. L1 should surface as an unresolved edge.",
+      "framework": "custom",
+      "class_path": "src.agents.broken_ref.BrokenRefAgent",
+      "model_id": {
+        "$oid": "199999999999999999999999"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001a"
+      },
+      "name": "broken_tool_ref_agent",
+      "display_name": "Broken Tool FK Agent",
+      "description": "One of tool_ids points at a tool that does not exist.",
+      "framework": "custom",
+      "class_path": "src.agents.broken_ref.BrokenToolRefAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        },
+        {
+          "$oid": "399999999999999999999999"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001b"
+      },
+      "name": "no_description_agent",
+      "display_name": "No Description Agent",
+      "description": null,
+      "framework": "custom",
+      "class_path": "src.agents.no_desc.NoDescAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": null,
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001c"
+      },
+      "name": "duplicate_named_agent",
+      "display_name": "Duplicate Named Agent (v1)",
+      "description": "First of two agents sharing the same `name`. Different _id.",
+      "framework": "custom",
+      "class_path": "src.agents.dup.DupA",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001d"
+      },
+      "name": "duplicate_named_agent",
+      "display_name": "Duplicate Named Agent (v2)",
+      "description": "Second of two agents sharing the same `name`.",
+      "framework": "custom",
+      "class_path": "src.agents.dup.DupB",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001e"
+      },
+      "name": "support_coordinator",
+      "display_name": "Support Coordinator",
+      "description": "Top-level agent for the customer_support_pipeline workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.support_agents.SupportCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000e"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "40000000000000000000001f"
+        },
+        {
+          "$oid": "400000000000000000000020"
+        },
+        {
+          "$oid": "400000000000000000000021"
+        },
+        {
+          "$oid": "400000000000000000000022"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000001f"
+      },
+      "name": "support_specialist_1",
+      "display_name": "Support Specialist 1",
+      "description": "Specialist in the support domain. Uses 4 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.support_agents.SupportSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000f"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000031"
+        },
+        {
+          "$oid": "300000000000000000000032"
+        },
+        {
+          "$oid": "300000000000000000000033"
+        },
+        {
+          "$oid": "300000000000000000000034"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000020"
+      },
+      "name": "support_specialist_2",
+      "display_name": "Support Specialist 2",
+      "description": "Specialist in the support domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.support_agents.SupportSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000010"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000032"
+        },
+        {
+          "$oid": "300000000000000000000033"
+        },
+        {
+          "$oid": "300000000000000000000034"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000021"
+      },
+      "name": "support_specialist_3",
+      "display_name": "Support Specialist 3",
+      "description": "Specialist in the support domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.support_agents.SupportSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000011"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000033"
+        },
+        {
+          "$oid": "300000000000000000000034"
+        },
+        {
+          "$oid": "300000000000000000000035"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000022"
+      },
+      "name": "support_specialist_4",
+      "display_name": "Support Specialist 4",
+      "description": "Specialist in the support domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.support_agents.SupportSpecialist4",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000012"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000034"
+        },
+        {
+          "$oid": "300000000000000000000035"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000023"
+      },
+      "name": "code_review_coordinator",
+      "display_name": "Code_review Coordinator",
+      "description": "Top-level agent for the code_review_pipeline workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.code_review_agents.Code_reviewCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000013"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000024"
+        },
+        {
+          "$oid": "400000000000000000000025"
+        },
+        {
+          "$oid": "400000000000000000000026"
+        },
+        {
+          "$oid": "400000000000000000000027"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000024"
+      },
+      "name": "code_review_specialist_1",
+      "display_name": "Code_review Specialist 1",
+      "description": "Specialist in the code_review domain. Uses 4 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.code_review_agents.Code_reviewSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000014"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000035"
+        },
+        {
+          "$oid": "300000000000000000000036"
+        },
+        {
+          "$oid": "300000000000000000000037"
+        },
+        {
+          "$oid": "300000000000000000000038"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000025"
+      },
+      "name": "code_review_specialist_2",
+      "display_name": "Code_review Specialist 2",
+      "description": "Specialist in the code_review domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.code_review_agents.Code_reviewSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000015"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000036"
+        },
+        {
+          "$oid": "300000000000000000000037"
+        },
+        {
+          "$oid": "300000000000000000000038"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000026"
+      },
+      "name": "code_review_specialist_3",
+      "display_name": "Code_review Specialist 3",
+      "description": "Specialist in the code_review domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.code_review_agents.Code_reviewSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000016"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000037"
+        },
+        {
+          "$oid": "300000000000000000000038"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000027"
+      },
+      "name": "code_review_specialist_4",
+      "display_name": "Code_review Specialist 4",
+      "description": "Specialist in the code_review domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.code_review_agents.Code_reviewSpecialist4",
+      "model_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000017"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000038"
+        },
+        {
+          "$oid": "300000000000000000000039"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000028"
+      },
+      "name": "i18n_coordinator",
+      "display_name": "I18n Coordinator",
+      "description": "Top-level agent for the multilingual_translation workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.i18n_agents.I18nCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000029"
+        },
+        {
+          "$oid": "40000000000000000000002a"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000029"
+      },
+      "name": "i18n_specialist_1",
+      "display_name": "I18n Specialist 1",
+      "description": "Specialist in the i18n domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.i18n_agents.I18nSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000039"
+        },
+        {
+          "$oid": "30000000000000000000003a"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002a"
+      },
+      "name": "i18n_specialist_2",
+      "display_name": "I18n Specialist 2",
+      "description": "Specialist in the i18n domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.i18n_agents.I18nSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003a"
+        },
+        {
+          "$oid": "30000000000000000000003b"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002b"
+      },
+      "name": "nlp_coordinator",
+      "display_name": "Nlp Coordinator",
+      "description": "Top-level agent for the sentiment_analysis_workflow workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.nlp_agents.NlpCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000007"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "40000000000000000000002c"
+        },
+        {
+          "$oid": "40000000000000000000002d"
+        },
+        {
+          "$oid": "40000000000000000000002e"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002c"
+      },
+      "name": "nlp_specialist_1",
+      "display_name": "Nlp Specialist 1",
+      "description": "Specialist in the nlp domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.nlp_agents.NlpSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000008"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003b"
+        },
+        {
+          "$oid": "30000000000000000000003c"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002d"
+      },
+      "name": "nlp_specialist_2",
+      "display_name": "Nlp Specialist 2",
+      "description": "Specialist in the nlp domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.nlp_agents.NlpSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000009"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003c"
+        },
+        {
+          "$oid": "30000000000000000000003d"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002e"
+      },
+      "name": "nlp_specialist_3",
+      "display_name": "Nlp Specialist 3",
+      "description": "Specialist in the nlp domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.nlp_agents.NlpSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000a"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003d"
+        },
+        {
+          "$oid": "30000000000000000000003e"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000002f"
+      },
+      "name": "observability_coordinator",
+      "display_name": "Observability Coordinator",
+      "description": "Top-level agent for the daily_briefing workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.observability_agents.ObservabilityCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000b"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000030"
+        },
+        {
+          "$oid": "400000000000000000000031"
+        },
+        {
+          "$oid": "400000000000000000000032"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000030"
+      },
+      "name": "observability_specialist_1",
+      "display_name": "Observability Specialist 1",
+      "description": "Specialist in the observability domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.observability_agents.ObservabilitySpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000c"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003e"
+        },
+        {
+          "$oid": "30000000000000000000003f"
+        },
+        {
+          "$oid": "300000000000000000000040"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000031"
+      },
+      "name": "observability_specialist_2",
+      "display_name": "Observability Specialist 2",
+      "description": "Specialist in the observability domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.observability_agents.ObservabilitySpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000d"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000003f"
+        },
+        {
+          "$oid": "300000000000000000000040"
+        },
+        {
+          "$oid": "300000000000000000000041"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000032"
+      },
+      "name": "observability_specialist_3",
+      "display_name": "Observability Specialist 3",
+      "description": "Specialist in the observability domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.observability_agents.ObservabilitySpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000e"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000040"
+        },
+        {
+          "$oid": "300000000000000000000041"
+        },
+        {
+          "$oid": "300000000000000000000042"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000033"
+      },
+      "name": "security_coordinator",
+      "display_name": "Security Coordinator",
+      "description": "Top-level agent for the fraud_detection workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.security_agents.SecurityCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000f"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000034"
+        },
+        {
+          "$oid": "400000000000000000000035"
+        },
+        {
+          "$oid": "400000000000000000000036"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000034"
+      },
+      "name": "security_specialist_1",
+      "display_name": "Security Specialist 1",
+      "description": "Specialist in the security domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.security_agents.SecuritySpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000010"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000041"
+        },
+        {
+          "$oid": "300000000000000000000042"
+        },
+        {
+          "$oid": "300000000000000000000043"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000035"
+      },
+      "name": "security_specialist_2",
+      "display_name": "Security Specialist 2",
+      "description": "Specialist in the security domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.security_agents.SecuritySpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000011"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000042"
+        },
+        {
+          "$oid": "300000000000000000000043"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000036"
+      },
+      "name": "security_specialist_3",
+      "display_name": "Security Specialist 3",
+      "description": "Specialist in the security domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.security_agents.SecuritySpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000012"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000043"
+        },
+        {
+          "$oid": "300000000000000000000044"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000037"
+      },
+      "name": "comms_coordinator",
+      "display_name": "Comms Coordinator",
+      "description": "Top-level agent for the content_moderation workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.comms_agents.CommsCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000013"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000038"
+        },
+        {
+          "$oid": "400000000000000000000039"
+        },
+        {
+          "$oid": "40000000000000000000003a"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000038"
+      },
+      "name": "comms_specialist_1",
+      "display_name": "Comms Specialist 1",
+      "description": "Specialist in the comms domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.comms_agents.CommsSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000014"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000044"
+        },
+        {
+          "$oid": "300000000000000000000045"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000039"
+      },
+      "name": "comms_specialist_2",
+      "display_name": "Comms Specialist 2",
+      "description": "Specialist in the comms domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.comms_agents.CommsSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000015"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000045"
+        },
+        {
+          "$oid": "300000000000000000000046"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003a"
+      },
+      "name": "comms_specialist_3",
+      "display_name": "Comms Specialist 3",
+      "description": "Specialist in the comms domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.comms_agents.CommsSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000016"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000046"
+        },
+        {
+          "$oid": "300000000000000000000047"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003b"
+      },
+      "name": "storage_coordinator",
+      "display_name": "Storage Coordinator",
+      "description": "Top-level agent for the data_extraction_pipeline workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.storage_agents.StorageCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000017"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "40000000000000000000003c"
+        },
+        {
+          "$oid": "40000000000000000000003d"
+        },
+        {
+          "$oid": "40000000000000000000003e"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003c"
+      },
+      "name": "storage_specialist_1",
+      "display_name": "Storage Specialist 1",
+      "description": "Specialist in the storage domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.storage_agents.StorageSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000047"
+        },
+        {
+          "$oid": "300000000000000000000048"
+        },
+        {
+          "$oid": "300000000000000000000049"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003d"
+      },
+      "name": "storage_specialist_2",
+      "display_name": "Storage Specialist 2",
+      "description": "Specialist in the storage domain. Uses 3 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.storage_agents.StorageSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000005"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000048"
+        },
+        {
+          "$oid": "300000000000000000000049"
+        },
+        {
+          "$oid": "30000000000000000000004a"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003e"
+      },
+      "name": "storage_specialist_3",
+      "display_name": "Storage Specialist 3",
+      "description": "Specialist in the storage domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.storage_agents.StorageSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000007"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000006"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000049"
+        },
+        {
+          "$oid": "30000000000000000000004a"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "40000000000000000000003f"
+      },
+      "name": "kv_coordinator",
+      "display_name": "Kv Coordinator",
+      "description": "Top-level agent for the meeting_notes_generator workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.kv_agents.KvCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000008"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000007"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000040"
+        },
+        {
+          "$oid": "400000000000000000000041"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000040"
+      },
+      "name": "kv_specialist_1",
+      "display_name": "Kv Specialist 1",
+      "description": "Specialist in the kv domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.kv_agents.KvSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000008"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000004a"
+        },
+        {
+          "$oid": "30000000000000000000004b"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000041"
+      },
+      "name": "kv_specialist_2",
+      "display_name": "Kv Specialist 2",
+      "description": "Specialist in the kv domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.kv_agents.KvSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000002"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000009"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000004b"
+        },
+        {
+          "$oid": "30000000000000000000004c"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000042"
+      },
+      "name": "analytics_coordinator",
+      "display_name": "Analytics Coordinator",
+      "description": "Top-level agent for the email_triage workflow. Delegates to specialists.",
+      "framework": "custom",
+      "class_path": "src.agents.analytics_agents.AnalyticsCoordinator",
+      "model_id": {
+        "$oid": "100000000000000000000003"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000a"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [
+        {
+          "$oid": "400000000000000000000043"
+        },
+        {
+          "$oid": "400000000000000000000044"
+        },
+        {
+          "$oid": "400000000000000000000045"
+        }
+      ],
+      "config": {
+        "temperature": 0.2,
+        "max_iterations": 5
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000043"
+      },
+      "name": "analytics_specialist_1",
+      "display_name": "Analytics Specialist 1",
+      "description": "Specialist in the analytics domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.analytics_agents.AnalyticsSpecialist1",
+      "model_id": {
+        "$oid": "100000000000000000000004"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000b"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000004c"
+        },
+        {
+          "$oid": "30000000000000000000004d"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000044"
+      },
+      "name": "analytics_specialist_2",
+      "display_name": "Analytics Specialist 2",
+      "description": "Specialist in the analytics domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.analytics_agents.AnalyticsSpecialist2",
+      "model_id": {
+        "$oid": "100000000000000000000005"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000c"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000004d"
+        },
+        {
+          "$oid": "30000000000000000000004e"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000045"
+      },
+      "name": "analytics_specialist_3",
+      "display_name": "Analytics Specialist 3",
+      "description": "Specialist in the analytics domain. Uses 2 tool(s).",
+      "framework": "custom",
+      "class_path": "src.agents.analytics_agents.AnalyticsSpecialist3",
+      "model_id": {
+        "$oid": "100000000000000000000006"
+      },
+      "system_prompt_id": {
+        "$oid": "20000000000000000000000d"
+      },
+      "tool_ids": [
+        {
+          "$oid": "30000000000000000000004e"
+        },
+        {
+          "$oid": "300000000000000000000031"
+        },
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {
+        "temperature": 0.4
+      },
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000046"
+      },
+      "name": "orphan_agent_not_in_any_workflow",
+      "display_name": "Orphan Agent",
+      "description": "Not attached to any workflow. Should surface in the orphan-count pill.",
+      "framework": "custom",
+      "class_path": "src.agents.orphan.OrphanAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000001"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000047"
+      },
+      "name": "shared_across_two_workflows",
+      "display_name": "Shared Agent",
+      "description": "Referenced by two different workflows. Tests cross-partition rendering.",
+      "framework": "custom",
+      "class_path": "src.agents.shared_agent.SharedAgent",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000004"
+      },
+      "tool_ids": [
+        {
+          "$oid": "300000000000000000000023"
+        }
+      ],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "400000000000000000000048"
+      },
+      "name": "throwaway_for_longname_workflow",
+      "display_name": "Throwaway",
+      "description": "Only exists so the long-name workflow has an agent to point at.",
+      "framework": "custom",
+      "class_path": "src.agents.throwaway.Throwaway",
+      "model_id": {
+        "$oid": "100000000000000000000001"
+      },
+      "system_prompt_id": {
+        "$oid": "200000000000000000000001"
+      },
+      "tool_ids": [],
+      "sub_agent_ids": [],
+      "config": {},
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      }
     }
   ],
   "workflows": [
@@ -1243,6 +6279,707 @@
       "tags": [
         "housekeeping",
         "no-agent"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000003"
+      },
+      "name": "customer_support_pipeline",
+      "display_name": "Customer Support Pipeline",
+      "description": "Customer support pipeline pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000001e"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000001e"
+        },
+        {
+          "$oid": "40000000000000000000001f"
+        },
+        {
+          "$oid": "400000000000000000000020"
+        },
+        {
+          "$oid": "400000000000000000000021"
+        },
+        {
+          "$oid": "400000000000000000000022"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "support"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000004"
+      },
+      "name": "code_review_pipeline",
+      "display_name": "Code Review Pipeline",
+      "description": "Code review pipeline pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000023"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000023"
+        },
+        {
+          "$oid": "400000000000000000000024"
+        },
+        {
+          "$oid": "400000000000000000000025"
+        },
+        {
+          "$oid": "400000000000000000000026"
+        },
+        {
+          "$oid": "400000000000000000000027"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "code_review"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000005"
+      },
+      "name": "multilingual_translation",
+      "display_name": "Multilingual Translation",
+      "description": "Multilingual translation pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000028"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000028"
+        },
+        {
+          "$oid": "400000000000000000000029"
+        },
+        {
+          "$oid": "40000000000000000000002a"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "i18n"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000006"
+      },
+      "name": "sentiment_analysis_workflow",
+      "display_name": "Sentiment Analysis Workflow",
+      "description": "Sentiment analysis workflow pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000002b"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000002b"
+        },
+        {
+          "$oid": "40000000000000000000002c"
+        },
+        {
+          "$oid": "40000000000000000000002d"
+        },
+        {
+          "$oid": "40000000000000000000002e"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "nlp"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000007"
+      },
+      "name": "daily_briefing",
+      "display_name": "Daily Briefing",
+      "description": "Daily briefing pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000002f"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000002f"
+        },
+        {
+          "$oid": "400000000000000000000030"
+        },
+        {
+          "$oid": "400000000000000000000031"
+        },
+        {
+          "$oid": "400000000000000000000032"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "observability"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000008"
+      },
+      "name": "fraud_detection",
+      "display_name": "Fraud Detection",
+      "description": "Fraud detection pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000033"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000033"
+        },
+        {
+          "$oid": "400000000000000000000034"
+        },
+        {
+          "$oid": "400000000000000000000035"
+        },
+        {
+          "$oid": "400000000000000000000036"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "security"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000009"
+      },
+      "name": "content_moderation",
+      "display_name": "Content Moderation",
+      "description": "Content moderation pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000037"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000037"
+        },
+        {
+          "$oid": "400000000000000000000038"
+        },
+        {
+          "$oid": "400000000000000000000039"
+        },
+        {
+          "$oid": "40000000000000000000003a"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "comms"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000a"
+      },
+      "name": "data_extraction_pipeline",
+      "display_name": "Data Extraction Pipeline",
+      "description": "Data extraction pipeline pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000003b"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000003b"
+        },
+        {
+          "$oid": "40000000000000000000003c"
+        },
+        {
+          "$oid": "40000000000000000000003d"
+        },
+        {
+          "$oid": "40000000000000000000003e"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "storage"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000b"
+      },
+      "name": "meeting_notes_generator",
+      "display_name": "Meeting Notes Generator",
+      "description": "Meeting notes generator pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000003f"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000003f"
+        },
+        {
+          "$oid": "400000000000000000000040"
+        },
+        {
+          "$oid": "400000000000000000000041"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "kv"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000c"
+      },
+      "name": "email_triage",
+      "display_name": "Email Triage",
+      "description": "Email triage pipeline.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000042"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000042"
+        },
+        {
+          "$oid": "400000000000000000000043"
+        },
+        {
+          "$oid": "400000000000000000000044"
+        },
+        {
+          "$oid": "400000000000000000000045"
+        }
+      ],
+      "monitors_enabled": true,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "analytics"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000d"
+      },
+      "name": "wide_fanout_showcase",
+      "display_name": "Wide Fanout Showcase",
+      "description": "Single agent using 22 tools. Stresses horizontal layout.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000000c"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000000c"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "stress-test",
+        "fanout"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000e"
+      },
+      "name": "deep_delegation_showcase",
+      "display_name": "Deep Delegation Showcase",
+      "description": "6-level delegation chain. Stresses progressive-disclosure BFS.",
+      "entrypoint_agent_id": {
+        "$oid": "40000000000000000000000d"
+      },
+      "agent_ids": [
+        {
+          "$oid": "40000000000000000000000d"
+        },
+        {
+          "$oid": "40000000000000000000000e"
+        },
+        {
+          "$oid": "40000000000000000000000f"
+        },
+        {
+          "$oid": "400000000000000000000010"
+        },
+        {
+          "$oid": "400000000000000000000011"
+        },
+        {
+          "$oid": "400000000000000000000012"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "stress-test",
+        "delegation"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "50000000000000000000000f"
+      },
+      "name": "cycle_edge_case",
+      "display_name": "Cycle Edge Case",
+      "description": "Contains a 2-cycle and a self-loop. Layout must not infinite-loop.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000013"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000013"
+        },
+        {
+          "$oid": "400000000000000000000014"
+        },
+        {
+          "$oid": "400000000000000000000015"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "cycle"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000010"
+      },
+      "name": "broken_refs_edge_case",
+      "display_name": "Broken References Edge Case",
+      "description": "Contains agents with broken model_id and tool_ids. L1 must not crash.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000019"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000019"
+        },
+        {
+          "$oid": "40000000000000000000001a"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "unresolved"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000011"
+      },
+      "name": "label_rendering_edge_cases",
+      "display_name": "Label Rendering Edge Cases",
+      "description": "Groups the very-long-name, unicode, verbose, null-description, and duplicate-name agents.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000016"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000016"
+        },
+        {
+          "$oid": "400000000000000000000017"
+        },
+        {
+          "$oid": "400000000000000000000018"
+        },
+        {
+          "$oid": "40000000000000000000001b"
+        },
+        {
+          "$oid": "40000000000000000000001c"
+        },
+        {
+          "$oid": "40000000000000000000001d"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "rendering"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000012"
+      },
+      "name": "empty_workflow",
+      "display_name": "Empty Workflow",
+      "description": "Zero agents. Edge case: the graph should still show the workflow node.",
+      "entrypoint_agent_id": null,
+      "agent_ids": [],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "empty"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000013"
+      },
+      "name": "shared_agent_workflow_a",
+      "display_name": "Shared Agent Workflow (A)",
+      "description": "References the same agent as its sibling workflow. Cross-partition test.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000047"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000047"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "shared-agent"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000014"
+      },
+      "name": "shared_agent_workflow_b",
+      "display_name": "Shared Agent Workflow (B)",
+      "description": "References the same agent as its sibling workflow. Cross-partition test.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000047"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000047"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case",
+        "shared-agent"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "500000000000000000000015"
+      },
+      "name": "a_workflow_whose_name_is_intentionally_very_long_to_stress_the_layout_columns",
+      "display_name": "A Workflow Whose Name Is Intentionally Very Long To Stress Layout Columns",
+      "description": "Tests truncation of workflow labels.",
+      "entrypoint_agent_id": {
+        "$oid": "400000000000000000000048"
+      },
+      "agent_ids": [
+        {
+          "$oid": "400000000000000000000048"
+        }
+      ],
+      "monitors_enabled": false,
+      "schedule": "on-demand",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "edge-case"
       ]
     }
   ],
@@ -1346,6 +7083,737 @@
       "tags": [
         "reference",
         "agent-attached"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000005"
+      },
+      "name": "large_ingestion_manifest.json",
+      "path": "/data/large_ingestion_manifest.json",
+      "size_bytes": 4200000,
+      "mime_type": "application/json",
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000006"
+      },
+      "name": "customer_records_2026_q1.csv",
+      "path": "/data/customer_records_2026_q1.csv",
+      "size_bytes": 890000,
+      "mime_type": "text/csv",
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000007"
+      },
+      "name": "code_review_playbook.md",
+      "path": "/data/code_review_playbook.md",
+      "size_bytes": 32000,
+      "mime_type": "text/markdown",
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000004"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000008"
+      },
+      "name": "policies_2026_v3.pdf",
+      "path": "/data/policies_2026_v3.pdf",
+      "size_bytes": 1100000,
+      "mime_type": "application/pdf",
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000009"
+      },
+      "name": "moderation_rules.yaml",
+      "path": "/data/moderation_rules.yaml",
+      "size_bytes": 8500,
+      "mime_type": "text/yaml",
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000009"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000a"
+      },
+      "name": "translations_de.json",
+      "path": "/data/translations_de.json",
+      "size_bytes": 340000,
+      "mime_type": "application/json",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000005"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000b"
+      },
+      "name": "translations_ja.json",
+      "path": "/data/translations_ja.json",
+      "size_bytes": 510000,
+      "mime_type": "application/json",
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000005"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000c"
+      },
+      "name": "mock_meeting_transcript.txt",
+      "path": "/data/mock_meeting_transcript.txt",
+      "size_bytes": 220000,
+      "mime_type": "text/plain",
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "50000000000000000000000b"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000d"
+      },
+      "name": "empty_file_edge_case.txt",
+      "path": "/data/empty_file_edge_case.txt",
+      "size_bytes": 0,
+      "mime_type": "text/plain",
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "50000000000000000000000f"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000e"
+      },
+      "name": "has_no_mime_type.dat",
+      "path": "/data/has_no_mime_type.dat",
+      "size_bytes": 1000,
+      "mime_type": null,
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "50000000000000000000000f"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000000f"
+      },
+      "name": "bad_ext_case.???",
+      "path": "/data/bad_ext_case.???",
+      "size_bytes": 2000,
+      "mime_type": "application/octet-stream",
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "50000000000000000000000f"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000010"
+      },
+      "name": "archive_2026_08.tar.gz",
+      "path": "/data/archive_2026_08.tar.gz",
+      "size_bytes": 45000000,
+      "mime_type": "application/gzip",
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000011"
+      },
+      "name": "archive_2026_09.tar.gz",
+      "path": "/data/archive_2026_09.tar.gz",
+      "size_bytes": 52000000,
+      "mime_type": "application/gzip",
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000012"
+      },
+      "name": "orphan_file_no_workflow",
+      "path": "/data/orphan_file_no_workflow",
+      "size_bytes": 5000,
+      "mime_type": "text/plain",
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": []
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000013"
+      },
+      "name": "duplicate_named_file.md",
+      "path": "/data/duplicate_named_file.md",
+      "size_bytes": 10000,
+      "mime_type": "text/markdown",
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000004"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000014"
+      },
+      "name": "duplicate_named_file.md",
+      "path": "/data/duplicate_named_file.md",
+      "size_bytes": 12000,
+      "mime_type": "text/markdown",
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000005"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000015"
+      },
+      "name": "cyrillic_имя_файла.txt",
+      "path": "/data/cyrillic_имя_файла.txt",
+      "size_bytes": 3000,
+      "mime_type": "text/plain",
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [],
+      "workflow_id": {
+        "$oid": "500000000000000000000004"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000016"
+      },
+      "name": "routine_file_00.txt",
+      "path": "/data/routine_00.txt",
+      "size_bytes": 1000,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000001"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000017"
+      },
+      "name": "routine_file_01.txt",
+      "path": "/data/routine_01.txt",
+      "size_bytes": 1250,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000002"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000018"
+      },
+      "name": "routine_file_02.txt",
+      "path": "/data/routine_02.txt",
+      "size_bytes": 1500,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000003"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000019"
+      },
+      "name": "routine_file_03.txt",
+      "path": "/data/routine_03.txt",
+      "size_bytes": 1750,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000004"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001a"
+      },
+      "name": "routine_file_04.txt",
+      "path": "/data/routine_04.txt",
+      "size_bytes": 2000,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000005"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001b"
+      },
+      "name": "routine_file_05.txt",
+      "path": "/data/routine_05.txt",
+      "size_bytes": 2250,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000006"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000008"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001c"
+      },
+      "name": "routine_file_06.txt",
+      "path": "/data/routine_06.txt",
+      "size_bytes": 2500,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000007"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000009"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001d"
+      },
+      "name": "routine_file_07.txt",
+      "path": "/data/routine_07.txt",
+      "size_bytes": 2750,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000008"
+      },
+      "created_by": {
+        "$oid": "00000000000000000000000a"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001e"
+      },
+      "name": "routine_file_08.txt",
+      "path": "/data/routine_08.txt",
+      "size_bytes": 3000,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "500000000000000000000009"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000001"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "60000000000000000000001f"
+      },
+      "name": "routine_file_09.txt",
+      "path": "/data/routine_09.txt",
+      "size_bytes": 3250,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000a"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000002"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000020"
+      },
+      "name": "routine_file_10.txt",
+      "path": "/data/routine_10.txt",
+      "size_bytes": 3500,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000b"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000003"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000021"
+      },
+      "name": "routine_file_11.txt",
+      "path": "/data/routine_11.txt",
+      "size_bytes": 3750,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000c"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000004"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000022"
+      },
+      "name": "routine_file_12.txt",
+      "path": "/data/routine_12.txt",
+      "size_bytes": 4000,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000d"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000005"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000023"
+      },
+      "name": "routine_file_13.txt",
+      "path": "/data/routine_13.txt",
+      "size_bytes": 4250,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000e"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000006"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
+      ]
+    },
+    {
+      "_id": {
+        "$oid": "600000000000000000000024"
+      },
+      "name": "routine_file_14.txt",
+      "path": "/data/routine_14.txt",
+      "size_bytes": 4500,
+      "mime_type": "text/plain",
+      "workflow_id": {
+        "$oid": "50000000000000000000000f"
+      },
+      "created_by": {
+        "$oid": "000000000000000000000007"
+      },
+      "created_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "updated_at": {
+        "$date": "2026-09-05T12:00:00Z"
+      },
+      "tags": [
+        "routine"
       ]
     }
   ]

@@ -79,3 +79,39 @@ export interface CollectionSchema {
   documentCount: number | null;
   fieldNames: string[];
 }
+
+/** The role a collection plays in the visualizer's node vocabulary.
+ *  Union of every NodeType the L1 scanner can produce, plus "other" — the
+ *  latter marks a collection the user explicitly wants excluded. */
+export type CollectionRole =
+  | "workflow"
+  | "agent"
+  | "tool"
+  | "model"
+  | "prompt"
+  | "user"
+  | "file"
+  | "other";
+
+/** One collection's user-supplied mapping. Everything a real project needs
+ *  to override about a collection's schema shape lives here.
+ *
+ *  Sent to the backend as part of the POST /graph body. When absent, the
+ *  backend falls back to the DEFAULT_COLLECTION_MAPPING baked into
+ *  l1_entity.py.
+ */
+export interface CollectionMappingEntry {
+  /** Node type this collection produces. "other" excludes it from the graph. */
+  role: CollectionRole;
+  /** Doc field holding the primary key. "_id" for MongoDB by default. */
+  idField: string;
+  /** Doc field holding the human-readable name. */
+  nameField: string;
+  /** Doc field names that hold references to OTHER collections' ids —
+   *  `agent_ids`, `model_id`, `tool_ids`, etc. Backend infers the target
+   *  collection from each field name via the `<X>_id → collection whose role
+   *  singular is X` convention, and picks the edge kind by heuristic
+   *  (delegates_to for names containing "sub_" or "delegate", contains for
+   *  file→workflow, uses for everything else). */
+  parentRefFields: string[];
+}

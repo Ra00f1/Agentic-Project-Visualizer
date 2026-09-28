@@ -9,103 +9,155 @@ Treat this as the "controlled environment" for the pipeline described in
 graph → L4 endpoint mapping). When we add a new scanner rule, we add or extend a
 fixture here first, then write the scanner test against it.
 
+## Current scale (2026-09-05 expansion)
+
+The fixture is intentionally large so the visualizer's rendering, layout, and
+detail-panel paths get stressed by realistic-shaped data. Seed counts:
+
+| Collection | Count | Purpose |
+|---|---|---|
+| users | 10 | Attribution (`created_by`, `owner_id`) |
+| models | 8 | Includes one with a null `cost` block (edge case) |
+| prompts | 28 | Various versions and variable sets; one with a null `content`; one with `version=0` |
+| tools | 78 | 22-tool fanout module + shared audit log + 30 domain tools + 4 unresolved + edge cases |
+| agents | 72 | Coordinators + specialists + deep-chain (6-level) + cycles + unicode + long names |
+| workflows | 21 | 10 domain workflows + 8 edge-case showcases + one empty + shared-agent pair |
+| files | 36 | Sizes from 0 bytes to 52 MB; one with null mime_type; unicode filenames; duplicate names |
+
 ## Layout
 
 ```
 mock-agent-project/
-├── src/                       Mock Python codebase
-│   ├── main.py                FastAPI app entrypoint (L4)
+├── src/                          Mock Python codebase (~80 files)
+│   ├── main.py                   FastAPI app entrypoint (L4)
 │   ├── api/
-│   │   ├── routes.py          APIRouter with @get/@post, path params, Depends (L4)
-│   │   └── flask_admin.py     Flask blueprint — proves EndpointExtractor is pluggable (L4)
+│   │   ├── routes.py             APIRouter with @get/@post, path params, Depends (L4)
+│   │   ├── flask_admin.py        Flask blueprint (L4 — different framework)
+│   │   └── versioned_routes.py   v1/v2 prefix routers + Depends chains (L4 stress)
 │   ├── agents/
-│   │   ├── research_agent.py  Wraps LangChain-style tools
-│   │   ├── writer_agent.py    Wraps LlamaIndex-style tools
-│   │   └── coordinator_agent.py Wraps custom-framework tools; class methods (L1, L3)
+│   │   ├── research_agent.py     LangChain-style tool wrapping
+│   │   ├── writer_agent.py       LlamaIndex-style tool wrapping
+│   │   ├── coordinator_agent.py  Class-methods; aliased imports (L1, L3)
+│   │   ├── deep_chain_agent.py   6 classes forming a delegation chain (L1)
+│   │   ├── cyclic_agents.py      A ↔ B delegation cycle (L1 recursion guard)
+│   │   ├── self_delegating.py    Self-loop delegation (L1 recursion guard)
+│   │   ├── wide_fanout_agent.py  Class for the 22-tool fanout agent
+│   │   ├── long_name.py          Class backing the 130-char-name agent
+│   │   ├── unicode_agent.py      Class backing the Japanese-katakana agent
+│   │   ├── verbose_agent.py      Class backing the 30-sentence description agent
+│   │   ├── broken_ref.py         Classes with broken model_id / tool_id FKs
+│   │   ├── no_desc.py            Agent with null description
+│   │   ├── dup.py                Two agents sharing a `name`
+│   │   ├── orphan.py             Agent not attached to any workflow
+│   │   ├── shared_agent.py       Agent referenced by two workflows
+│   │   ├── throwaway.py          Filler for the long-name workflow
+│   │   └── <domain>_agents.py    10 modules × 3-5 classes for domain workflows
 │   ├── tools/
-│   │   ├── langchain_tools.py @tool decorator (L2 — LangChain adapter)
-│   │   ├── llamaindex_tools.py FunctionTool.from_defaults (L2 — LlamaIndex adapter)
-│   │   ├── custom_tools.py    Plain-python tools (L2 — default adapter)
-│   │   └── shared.py          Helper called by tools in multiple flavors (L3 fan-in)
+│   │   ├── langchain_tools.py    @tool decorator (LangChain adapter)
+│   │   ├── llamaindex_tools.py   FunctionTool.from_defaults (LlamaIndex adapter)
+│   │   ├── custom_tools.py       Plain-python tools (default adapter)
+│   │   ├── shared.py             Fan-in target for L3
+│   │   ├── fanout_tools.py       22 sibling functions (wide fanout)
+│   │   ├── shared_logging.py     `audit_log` — wide fan-in target
+│   │   ├── async_tools.py        `async def` tools
+│   │   ├── class_tools.py        @classmethod + @staticmethod tools
+│   │   ├── lambda_tools.py       Lambda-defined tools (assignment, not def)
+│   │   ├── namespace_a.py        `process` function
+│   │   ├── namespace_b.py        `process` function (name collision test)
+│   │   ├── reexport_pkg/
+│   │   │   ├── __init__.py       Re-exports `greet` from _impl (L2 follow-through)
+│   │   │   └── _impl.py          Real `greet` definition
+│   │   └── <domain>_tools.py     10 domain modules × 2-4 tool functions
 │   ├── services/
-│   │   ├── search_service.py  Sync service layer (L3)
-│   │   └── llm_service.py     Async service — TaskGroup usage (L3)
+│   │   ├── search_service.py     Sync service (L3)
+│   │   ├── llm_service.py        Async service using TaskGroup (L3)
+│   │   ├── deep_call_chain.py    hop1 → hop2 → … → hop8 (L3 depth)
+│   │   ├── circular_a.py         Circular import half 1
+│   │   ├── circular_b.py         Circular import half 2 (import-time deferred)
+│   │   └── large_module.py       40 functions in one file (L3 throughput)
 │   ├── repositories/
-│   │   └── document_repo.py   Repository pattern; end of the handler→service→repo chain (L3)
+│   │   └── document_repo.py      End of the handler → service → repo chain
 │   ├── models/
-│   │   └── schemas.py         Pydantic models used by the API (L4 request/response shapes)
+│   │   └── schemas.py            Pydantic models used by the API (L4)
 │   ├── utils/
-│   │   ├── decorators.py      Custom decorator + functools.wraps wrapper
-│   │   └── dynamic_loader.py  Intentional __import__ case — KNOWN scanner limitation
+│   │   ├── decorators.py         Custom decorator + functools.wraps + looks-like-tool decoy
+│   │   ├── dynamic_loader.py     `__import__` — KNOWN scanner limitation
+│   │   ├── wildcard_helpers.py   __all__-limited wildcard-import target
+│   │   ├── wildcard_user.py      Uses `from ... import *`
+│   │   ├── dispatch.py           Runtime dispatch (dict registry, getattr)
+│   │   └── generators.py         yield-based functions
 │   └── workers/
-│       └── background.py      Nested functions, closures, stacked decorators
+│       └── background.py         Nested functions, closures, stacked decorators
 └── mongo/
-    ├── dump.json              Raw seed data — importable via mongoimport
-    └── seed.py                Idempotent motor-based seeder (also our L1 test target)
+    ├── dump.json                 Raw seed data (253 docs — MongoDB Extended JSON v2)
+    └── seed.py                   Idempotent motor-based seeder
 ```
 
-## What each fixture proves
+## Edge cases the expanded fixture covers
 
-### L1 — Entity ingestion (Mongo)
-`mongo/dump.json` seeds 7 collections with realistic cross-references
-(`workflow.agent_ids → agents`, `agent.model_id → models`, `agent.tool_ids → tools`,
-`prompt.owner_id → users`, etc.). The scanner should produce nodes for each doc
-and edges for each reference.
+### Graph shape
+- **Cycles**: 2-cycle (`cyclic_agent_a ↔ cyclic_agent_b`) + self-loop (`self_delegating_agent`). Progressive-disclosure BFS must not infinite-loop.
+- **Deep chain**: `deep_chain_L1 → L2 → L3 → L4 → L5 → L6`. Layout must survive 6-level cascades without partitions colliding.
+- **Wide fan-out**: `wide_fanout_orchestrator` uses 22 tools. Compact layout should spread them; Organic edges should stagger.
+- **Wide fan-in**: `shared_audit_log` is used by 20+ agents.
+- **Shared node across workflows**: `shared_across_two_workflows` appears in two workflow partitions — cross-partition edge test.
+- **Orphan agent**: `orphan_agent_not_in_any_workflow` is not in any workflow's `agent_ids`. Should surface in the orphan-count pill.
+- **Empty workflow**: `empty_workflow` has `agent_ids: []`. Workflow node should render alone.
+- **Diamond patterns**: coordinators delegate to specialists that share domain tools.
 
-### L2 — Tool → function resolution
-Each `tools` document in Mongo has `function_name` + `module_path`. Those point
-into `src/tools/*.py`. Coverage:
+### Broken references (L1 unresolved-edge tests)
+- `broken_model_ref_agent.model_id` points at `199999...` (non-existent). L1 should surface as unresolved.
+- `broken_tool_ref_agent.tool_ids` includes a non-existent tool id.
+- 4 tools (`missing_impl_alpha/beta/gamma/delta`) point at `src.tools.does_not_exist` — L2 unresolved without crash.
 
-- **LangChain tools** are `@tool`-decorated — the decorator changes the runtime
-  object but not the AST name we resolve against.
-- **LlamaIndex tools** are constructed via `FunctionTool.from_defaults(fn=...)`.
-  The Mongo record's `function_name` is the wrapped function's name, not the
-  variable holding the `FunctionTool`.
-- **Custom tools** are plain functions — the "no-framework" baseline.
-- One Mongo tool row (`missing_impl_tool`) points at a function that does not
-  exist in the code. Scanner should surface this as an *unresolved* edge, not crash.
-- One code function (`utils.decorators.looks_like_a_tool_but_isnt`) has a
-  tool-shaped signature but no Mongo row referring to it. It should NOT appear
-  as a tool node.
+### Missing / null / weird metadata
+- Model with null `cost`.
+- Prompt with null `content`.
+- Prompt with `version: 0`.
+- Agent with null `description` and null `system_prompt_id`.
+- Tool with null `framework`.
+- File with null `mime_type`.
+- Two agents sharing the same `name` (different `_id`).
+- Two files sharing the same `name` (different workflows).
 
-### L3 — Function call graph
-- `api/routes.py:list_documents` → `services/search_service.py:search` →
-  `repositories/document_repo.py:fetch_all` — a three-hop chain.
-- `tools/langchain_tools.py:web_search_tool` and
-  `tools/custom_tools.py:internal_search_tool` both call `tools/shared.py:normalize_query`
-  — fan-in.
-- `workers/background.py` exercises nested functions and closures — the call graph
-  should attribute inner-function calls to the enclosing definition, not to the
-  module.
+### Label rendering
+- Agent name 130 characters long (`an_extremely_long_agent_name_that_...`).
+- Workflow name 76 characters long.
+- Unicode agent name (Japanese katakana).
+- Unicode filename (Cyrillic).
+- Verbose 30-sentence description (detail panel must scroll).
 
-### L4 — Endpoint mapping
-- `main.py` mounts `api/routes.py:router` — the extractor must follow
-  `include_router` calls.
-- `api/routes.py` uses `@router.get`, `@router.post`, path parameters, and
-  `Depends(...)` — every decorator form we expect on FastAPI.
-- `api/flask_admin.py` uses Flask's `@blueprint.route` — proves the
-  `EndpointExtractor` interface actually generalizes past FastAPI.
+### File sizes
+- 0-byte file.
+- 45 MB and 52 MB tarballs (won't be inspected but should render as file nodes).
 
-## Import & language edge cases (deliberate)
-
-- **Aliased imports** in `agents/coordinator_agent.py`.
-- **Relative imports** throughout `api/` and `services/`.
-- **`__init__.py` re-exports** in `tools/__init__.py` and `agents/__init__.py`.
-- **Stacked decorators** on `workers/background.py:scheduled_cleanup`.
-- **`functools.wraps` wrapper** in `utils/decorators.py`.
-- **Dynamic import** in `utils/dynamic_loader.py` — the scanner is expected to
-  skip this and log it as an unresolved reference. Do not "fix" this fixture.
+### Code-side (L2/L3 targets)
+- Class-based tools (`ClassTool.load`, `ClassTool.parse_static`).
+- Lambda-defined tool (`add_one = lambda x: x + 1`) — AST is `Assign`, not `FunctionDef`.
+- Async-def tools.
+- Re-exported tool: Mongo `module_path` = package `__init__.py`, real def in `_impl.py`.
+- Two modules defining `process` (namespace collision — must disambiguate by module_path).
+- Circular imports between `circular_a` and `circular_b`.
+- Wildcard import (`from utils.wildcard_helpers import *`) with `__all__` gating.
+- Runtime dispatch via registry (`dispatch.py`) — L3 cannot statically resolve.
+- 8-hop call chain (`deep_call_chain.py`).
+- Single module with 40 functions (`large_module.py`) — throughput test.
 
 ## Using the fixture
 
 Point the visualizer at:
 
 - **Codebase**: `<repo>/mock-agent-project/src`
-- **Database**: any local Mongo instance seeded from `mongo/dump.json` (or via
-  `python mongo/seed.py --uri mongodb://localhost:27017 --db mock_agent`).
+- **Database**: any local Mongo instance seeded from `mongo/dump.json`. Reseed with:
+  ```
+  python mongo/seed.py --uri mongodb://localhost:27017 --db mock_agent --drop
+  ```
+  The `--drop` matters — the fixture grew, so a stale DB from before this
+  expansion needs a full reset.
 
-The scanner should produce roughly:
-- ~7 workflow + agent + model + prompt + user + file nodes from Mongo
-- ~9 tool nodes (3 per framework) with `implements` edges to code functions
-- ~20+ function nodes once L3 lands
-- ~7 endpoint nodes (FastAPI + Flask) once L4 lands
+### Regenerating the fixture
+
+The current dump.json was built by `/tmp/expand_fixture.py` — a one-shot Python
+script that (a) preserves the original 40 hand-written docs and (b) appends the
+expansion listed above. If you need to regenerate or extend, save that script
+alongside this README rather than editing dump.json by hand for the additions.

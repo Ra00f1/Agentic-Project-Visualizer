@@ -37,6 +37,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { layoutGraph } from "./lib/layout";
 import { EDGE_COLOR } from "./lib/nodeStyle";
 import { EntityNode, type EntityNodeData } from "./components/EntityNode";
+import { OrganicEdge } from "./components/OrganicEdge";
+import { LegendBar } from "./components/LegendBar";
 import { NodeContextMenu } from "./components/NodeContextMenu";
 import { DetailPanel } from "./components/DetailPanel";
 import { SetupScreen } from "./components/SetupScreen";
@@ -44,6 +46,12 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useTheme } from "./lib/useTheme";
 
 const NODE_TYPES = { entity: EntityNode };
+// Edge components React Flow can render. Registered once at module
+// scope so the object reference stays stable across renders — passing
+// a fresh object into <ReactFlow edgeTypes={...}> on every render
+// forces it to re-mount every edge. Only "organic" is custom; when
+// the mode is Compact or Tiered we leave the built-in "smoothstep".
+const EDGE_TYPES = { organic: OrganicEdge };
 
 /** Node types the UI ever renders as separate graph nodes. Files are
  *  excluded — they're inlined onto their parent workflow instead. If we
@@ -700,6 +708,15 @@ export default function App() {
   const [uri, setUri] = useState("mongodb://localhost:27017");
   const [db, setDb] = useState("mock_agent");
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  // Full per-collection mapping (role + id_field + name_field +
+  // parent_ref_fields) captured from the Setup screen. Passed to
+  // fetchGraph so the L1 scanner can honor the user's field-name
+  // overrides instead of assuming DEFAULT_COLLECTION_MAPPING's shape.
+  // Empty object here means "no mapping picked yet, use backend default"
+  // — matches the fetchGraph.mapping omission semantics.
+  const [collectionMapping, setCollectionMapping] = useState<
+    Record<string, import("@shared-types/graph").CollectionMappingEntry>
+  >({});
   // Codebase root persisted in localStorage — paths are painful to retype,
   // and this is a machine-local preference (won't collide with team-shared
   // config). Falls back to empty string, which the endpoint treats as
@@ -784,18 +801,34 @@ export default function App() {
   // handle for future 'reset then fit' behaviour.
   const [layoutNonce, setLayoutNonce] = useState(0);
 
-  // Layout ranker — user's choice between tiered and compact layouts.
-  // Persisted in localStorage so a reload keeps the preferred mode.
-  const [layoutRanker, setLayoutRanker] = useState<"longest-path" | "network-simplex">(
+  // View mode — user's choice of layout algorithm × edge routing.
+  // Persisted so a reload keeps the preferred mode; on first read
+  // we migrate from the pre-Organic "apv.layoutRanker" key.
+  //
+  // Only three values are meaningful:
+  //   compact  = dagre network-simplex + default straight-ish edges
+  //   tiered   = BFS shortest-path ranker + default straight-ish edges
+  //   organic  = compact layout + custom S-curve edges (OrganicEdge)
+  //
+  // Organic reuses compact's ranker on purpose — see comment in
+  // OrganicEdge.tsx for the layout-vs-routing split.
+  const [viewMode, setViewMode] = useState<"compact" | "tiered" | "organic">(
     () => {
       try {
-        const v = localStorage.getItem("apv.layoutRanker");
-        return v === "network-simplex" ? "network-simplex" : "longest-path";
+        const v = localStorage.getItem("apv.viewMode");
+        if (v === "compact" || v === "tiered" || v === "organic") return v;
+        // Migration from the pre-Organic single-key state.
+        const old = localStorage.getItem("apv.layoutRanker");
+        return old === "network-simplex" ? "compact" : "tiered";
       } catch {
-        return "longest-path";
+        return "tiered";
       }
     },
   );
+  // Derived: which dagre ranker to hand to layoutGraph. Tiered gets
+  // longest-path; both Compact and Organic get network-simplex.
+  const layoutRanker: "longest-path" | "network-simplex" =
+    viewMode === "tiered" ? "longest-path" : "network-simplex";
 
   // Click-to-focus: the node the user last clicked with intent to trace
   // (not necessarily the same as inspectId, which drives the detail
@@ -831,6 +864,11 @@ export default function App() {
         // Empty string is treated as "no root supplied" server-side, so L2
         // is skipped and the endpoint emits its advisory ScanError.
         codebaseRoot: codebaseRoot || undefined,
+        // Empty object means "user hasn't picked yet" — fetchGraph omits
+        // the mapping key from the body, backend falls back to the
+        // hardcoded DEFAULT_COLLECTION_MAPPING for the mock fixture.
+        mapping:
+          Object.keys(collectionMapping).length > 0 ? collectionMapping : undefined,
       });
       setRawGraph(graph);
       // Reset expansion on every fresh fetch — otherwise stale ids from a
@@ -847,7 +885,7 @@ export default function App() {
       setError(err instanceof Error ? err.message : String(err));
       setStatus("error");
     }
-  }, [uri, db, selectedCollections, codebaseRoot]);
+  }, [uri, db, selectedCollections, codebaseRoot, collectionMapping]);
 
   // Rebuild the visible React Flow graph whenever the raw graph or the
   // expanded set changes. Dagre lays it out every time — cheap at these
@@ -1020,7 +1058,11 @@ export default function App() {
     const styledEdges = laid.edges.map((e) => {
       const isDimmed =
         hlSet.size > 0 && !(hlSet.has(e.source) && hlSet.has(e.target));
-      return { ...e, style: { ...e.style, opacity: isDimmed ? DIM : 1 } };
+      // Organic swaps the *type* per edge — the built-in smoothstep
+      // renderer runs otherwise. This is the ONLY place viewMode
+      // touches edge rendering; keeps buildView layout-agnostic.
+      const type = viewMode === "organic" ? "organic" : e.type;
+      return { ...e, type, style: { ...e.style, opacity: isDimmed ? DIM : 1 } };
     });
     setNodes(styledNodes);
     setEdges(styledEdges);
@@ -1050,7 +1092,7 @@ export default function App() {
     // `view` is a memoized value derived from (rawGraph, expandedIds) — the
     // effect only needs to fire when those change, plus when React Flow's
     // setters change (they're stable, but ESLint's rule doesn't know).
-  }, [rawGraph, view, setNodes, setEdges, layoutNonce, focusNodeId, searchText, layoutRanker]);
+  }, [rawGraph, view, setNodes, setEdges, layoutNonce, focusNodeId, searchText, layoutRanker, viewMode]);
 
   // Wrap React Flow's onNodesChange so we can capture the end of every
   // drag interaction and persist that position. React Flow emits many
@@ -1298,11 +1340,24 @@ export default function App() {
         initialUri={uri}
         initialDb={db}
         initialCodebaseRoot={codebaseRoot}
-        onSubmit={({ uri: newUri, db: newDb, collections, codebaseRoot: newRoot }) => {
+        onSubmit={({ uri: newUri, db: newDb, collections, codebaseRoot: newRoot, collectionMapping: newMapping }) => {
           setUri(newUri);
           setDb(newDb);
           setSelectedCollections(collections);
           setCodebaseRoot(newRoot);
+          // Full mapping now travels through to the backend on the next
+          // fetchGraph call. Persist here too so a reopen picks it up
+          // instantly, before the async fetchSchema finishes.
+          setCollectionMapping(newMapping);
+          try {
+            localStorage.setItem(
+              `apv.mapping.${newUri}.${newDb}`,
+              JSON.stringify(newMapping),
+            );
+          } catch {
+            // localStorage full/blocked — mapping is still live in
+            // memory for this session.
+          }
           try {
             localStorage.setItem("apv.codebaseRoot", newRoot);
           } catch {
@@ -1388,27 +1443,50 @@ export default function App() {
         >
           Reset layout
         </button>
-        <button
-          onClick={() => {
-            const next: "longest-path" | "network-simplex" =
-              layoutRanker === "longest-path" ? "network-simplex" : "longest-path";
-            setLayoutRanker(next);
-            try {
-              localStorage.setItem("apv.layoutRanker", next);
-            } catch {
-              // localStorage full/blocked — the state still holds for
-              // this session, we just won't remember it next time.
-            }
-          }}
-          className="rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-900 dark:border-neutral-700 dark:text-neutral-100"
-          title={
-            layoutRanker === "longest-path"
-              ? "Currently tiered — every node lines up at a semantic tier column. Click for compact."
-              : "Currently compact — dagre picks the tightest layout. Click for tiered."
-          }
+        {/* 3-way segmented toggle: Compact / Tiered / Organic.
+            One rounded outer container, adjacent buttons share a
+            divider. Active pill inverts to the neutral-900/100
+            primary treatment used elsewhere in the toolbar. */}
+        <div
+          className="inline-flex overflow-hidden rounded border border-neutral-300 dark:border-neutral-700"
+          role="group"
+          aria-label="Layout mode"
         >
-          Layout: {layoutRanker === "longest-path" ? "Tiered" : "Compact"}
-        </button>
+          {(["compact", "tiered", "organic"] as const).map((m, i) => {
+            const on = viewMode === m;
+            const label = m === "compact" ? "Compact" : m === "tiered" ? "Tiered" : "Organic";
+            const explain =
+              m === "compact"
+                ? "Dagre picks the tightest layout."
+                : m === "tiered"
+                  ? "Every node lines up at its semantic tier column."
+                  : "Compact layout, S-curve edges that spread parallel lines apart.";
+            return (
+              <button
+                key={m}
+                onClick={() => {
+                  setViewMode(m);
+                  try {
+                    localStorage.setItem("apv.viewMode", m);
+                  } catch {
+                    // localStorage full/blocked — mode still holds
+                    // for this session.
+                  }
+                }}
+                title={explain}
+                className={
+                  (on
+                    ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                    : "bg-white text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-900") +
+                  (i > 0 ? " border-l border-neutral-300 dark:border-neutral-700" : "") +
+                  " px-3 py-1 text-sm"
+                }
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
         <button
           onClick={() => setShowOrphans((v) => !v)}
           disabled={orphanCount === 0}
@@ -1470,6 +1548,11 @@ export default function App() {
         </div>
       </header>
 
+      {/* Legend strip: one row of chips per node type / edge kind
+          currently visible on the graph. Renders nothing before the
+          first graph loads, so no empty strip on cold start. */}
+      <LegendBar nodes={nodes} edges={edges} />
+
       {/* Flex row so opening the panel shrinks the canvas rather than
           overlapping it. React Flow watches its container size and reflows
           automatically — the minimap stays at the bottom-right of the
@@ -1488,6 +1571,7 @@ export default function App() {
               nodes={nodes}
               edges={edges}
               nodeTypes={NODE_TYPES}
+              edgeTypes={EDGE_TYPES}
               onNodesChange={handleNodesChange}
               onEdgesChange={onEdgesChange}
               onNodeClick={onNodeClick}
