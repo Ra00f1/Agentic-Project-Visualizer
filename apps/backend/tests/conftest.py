@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 
 import pytest
@@ -21,6 +22,7 @@ import pytest_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore[import-untyped]
 
 from agentic_visualizer.scanners.base import ScanContext
+from agentic_visualizer.trace.events import TraceEvent
 
 
 # The env vars follow the same convention as the seeder script.
@@ -82,3 +84,31 @@ def scan_context_factory(fixed_clock):
 # pytest-asyncio 1.x: `asyncio_mode = "auto"` in pyproject would work, but we
 # opt to be explicit per-test via `@pytest.mark.asyncio` so it's obvious which
 # tests need the event loop. No config needed for that here.
+
+
+class ScriptedTraceSource:
+    """Minimal TraceSource: yields a fixed list of events, then idles until stop().
+
+    Matches `FileTailTraceSource`'s real behavior (`events()` never ends on
+    its own while running) closely enough for runtime-channel/WS tests that
+    only care about the correlation/state/publish pipeline, not file IO.
+    Shared here (not duplicated per test file) since both
+    `tests/runtime/test_channel.py` and `tests/api/test_runtime_ws.py` need
+    the exact same double, and they're in different subpackages with no
+    other common import point.
+    """
+
+    def __init__(self, events: list[TraceEvent]) -> None:
+        self._events = events
+        self._done = asyncio.Event()
+
+    async def start(self) -> None:
+        pass
+
+    async def stop(self) -> None:
+        self._done.set()
+
+    async def events(self) -> AsyncIterator[TraceEvent]:
+        for event in self._events:
+            yield event
+        await self._done.wait()

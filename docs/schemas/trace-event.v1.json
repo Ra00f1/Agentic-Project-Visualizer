@@ -1,0 +1,134 @@
+{
+  "$defs": {
+    "TraceRef": {
+      "description": "Identifies *what* emitted a trace event, for correlation against the graph.\n\nResolution (task NN+2) tries these in order: `db_id`, `framework_id`,\n`(module, qualname)`, then falls back to `(kind, name)` typed-name\nmatching. A target project's `apv_trace` decorator only ever fills in\n`name`/`module`/`qualname` from the function it wraps \u2014 `framework_id`\nand `db_id` are there for future framework adapters and DB-seeded\nprojects to populate, not required for a trace event to be valid.",
+      "properties": {
+        "db_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Db Id"
+        },
+        "framework_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Framework Id"
+        },
+        "module": {
+          "minLength": 1,
+          "title": "Module",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "qualname": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Qualname"
+        }
+      },
+      "required": [
+        "name",
+        "module"
+      ],
+      "title": "TraceRef",
+      "type": "object"
+    }
+  },
+  "description": "One lifecycle boundary (start/end/error) of one traced call.\n\n`v` is a schema version tag, not a Pydantic model version \u2014 bump it (and\nadd a new model) if this shape ever changes incompatibly, so an old\ntailer reading a new log format fails loudly instead of silently\nmisparsing.",
+  "properties": {
+    "kind": {
+      "enum": [
+        "workflow",
+        "agent",
+        "tool",
+        "function"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "meta": {
+      "additionalProperties": true,
+      "title": "Meta",
+      "type": "object"
+    },
+    "parent_span_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Span Id"
+    },
+    "phase": {
+      "enum": [
+        "start",
+        "end",
+        "error"
+      ],
+      "title": "Phase",
+      "type": "string"
+    },
+    "ref": {
+      "$ref": "#/$defs/TraceRef"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "span_id": {
+      "minLength": 1,
+      "title": "Span Id",
+      "type": "string"
+    },
+    "ts": {
+      "format": "date-time",
+      "title": "Ts",
+      "type": "string"
+    },
+    "v": {
+      "const": 1,
+      "default": 1,
+      "title": "V",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "ts",
+    "run_id",
+    "span_id",
+    "phase",
+    "kind",
+    "ref"
+  ],
+  "title": "TraceEvent",
+  "type": "object"
+}

@@ -25,28 +25,27 @@ Design decisions:
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Annotated, Any, AsyncIterator
 
-from fastapi import Body, FastAPI, HTTPException, Query
+from bson import ObjectId
+from bson.errors import InvalidId
+from fastapi import Body, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from pymongo.errors import PyMongoError
 
-from bson import ObjectId
-from bson.errors import InvalidId
-
+from .codebase import LocalCodebaseAdapter
 from .config import get_settings
 from .connectors import (
     CollectionSchema,
     MongoConnector,
     close_all_clients,
 )
-from .domain import Edge, Graph, Node, Provenance
-from .codebase import LocalCodebaseAdapter
-from .domain import ScanError, ScanResult
+from .domain import Edge, Graph, Node, Provenance, ScanError, ScanResult
+from .runtime import DeadLetterEntryOut, FileTailTraceSource, RuntimeChannel
 from .scanners import (
     DEFAULT_COLLECTION_MAPPING,
     L1EntityScanner,
@@ -55,7 +54,6 @@ from .scanners import (
     ScanContext,
 )
 from .scanners.l1_entity import _singularize, build_mapping_from_ui
-
 
 # --- Request body for POST /graph -----------------------------------------
 
@@ -92,15 +90,25 @@ logger = logging.getLogger("agentic_visualizer")
 
 
 @asynccontextmanager
-async def _lifespan(_app: FastAPI) -> AsyncIterator[None]:
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     """FastAPI lifespan — replaces the deprecated `on_event` hooks.
 
-    Runs once at startup (yield), and once at shutdown (after the
-    yield). We only need shutdown: release the cached motor client
-    pools so the process exits cleanly instead of leaving TCP
-    connections open until GC eventually runs.
+    Startup: start the `RuntimeChannel`'s background loops (`app.state.runtime_channel`,
+    set in `create_app`), and — only if `AGENTIC_DEFAULT_TRACE_LOG_PATH` is
+    set — start tailing it. Off by default, per CLAUDE.md §1.
+
+    Shutdown: stop the runtime channel (which also stops its active
+    TraceSource), then release the cached motor client pools so the process
+    exits cleanly instead of leaving TCP connections open until GC eventually
+    runs.
     """
+    runtime_channel: RuntimeChannel = app.state.runtime_channel
+    await runtime_channel.start()
+    settings = get_settings()
+    if settings.default_trace_log_path:
+        await runtime_channel.set_source(FileTailTraceSource(Path(settings.default_trace_log_path)))
     yield
+    await runtime_channel.stop()
     await close_all_clients()
 
 
@@ -110,6 +118,14 @@ def create_app() -> FastAPI:
     """
     settings = get_settings()
     app = FastAPI(title="agentic-visualizer", version="0.1.0", lifespan=_lifespan)
+
+    # Owns NodeIndex/RuntimeStateStore/DeadLetterBuffer and the /ws/runtime
+    # fan-out. Stashed on app.state (not just a closure var) because
+    # `_lifespan` needs it and is defined outside this factory, receiving
+    # only `app` — the standard FastAPI pattern for a resource both the
+    # lifespan and route handlers need.
+    runtime_channel = RuntimeChannel()
+    app.state.runtime_channel = runtime_channel
 
     app.add_middleware(
         CORSMiddleware,
@@ -371,10 +387,24 @@ def create_app() -> FastAPI:
                             )
                         )
 
-                return Graph.from_results(results)
+                graph = Graph.from_results(results)
         except PyMongoError as exc:
             logger.exception("Mongo scan failed for db=%s uri=%s", db, uri)
             raise HTTPException(status_code=502, detail=f"Mongo error: {exc}") from exc
+
+        # A /graph call IS "refresh" in this app -- there's no other
+        # persistent, subscribable graph state to hook a RefreshCompleted
+        # event off of (see runtime/channel.py's module docstring). Every
+        # successful scan updates the runtime overlay's NodeIndex to match.
+        # Deliberately outside the try/except above and its own try/except
+        # here: the scan already succeeded and `graph` is valid -- a bug in
+        # the runtime overlay (a secondary, opt-in feature) must not turn a
+        # good response into an unrelated 500.
+        try:
+            await runtime_channel.update_graph(graph)
+        except Exception:  # noqa: BLE001 - the overlay is best-effort; the scan result is not
+            logger.exception("runtime: update_graph failed after a successful /graph scan")
+        return graph
 
     # --- /graph/subtree ---------------------------------------------------
     # Lazy loader for the children of one node. Today this only knows
@@ -525,6 +555,45 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=502, detail=f"Mongo error: {exc}") from exc
 
         return Graph(nodes=nodes, edges=edges, errors=[])
+
+    # --- /ws/runtime --------------------------------------------------
+    # Streams RuntimeChannel's messages: a snapshot right after connect,
+    # then deltas/dead-letter-stats/resets as they happen. No client->server
+    # messages are expected; this is purely server push.
+    #
+    # No auth. Every other endpoint on this sidecar is equally open today —
+    # see this module's own docstring: "we'll wire that in when the sidecar
+    # goes behind Tauri." Adding a session token to just this one new
+    # endpoint, ahead of the rest of the app, would be a half-measure that
+    # contradicts that already-documented sequencing. See Task 3's `## Result`.
+    @app.websocket("/ws/runtime")
+    async def ws_runtime(websocket: WebSocket) -> None:
+        await websocket.accept()
+        subscriber = runtime_channel.subscribe()
+        try:
+            await websocket.send_text(runtime_channel.snapshot_message().model_dump_json(by_alias=True))
+            while True:
+                message = await subscriber.get()
+                await websocket.send_text(message.model_dump_json(by_alias=True))
+        except WebSocketDisconnect:
+            pass
+        finally:
+            runtime_channel.unsubscribe(subscriber)
+
+    # --- /runtime/dead-letter -------------------------------------------
+    # Recent trace events NodeIndex couldn't resolve. Feeds the frontend's
+    # DeadLetterDrawer (Task 4) -- Task 3 built DeadLetterBuffer but no REST
+    # endpoint for it yet; its own Files section flagged this as "add if
+    # missing in NN+2 -- add a follow-up if needed." Small enough, and
+    # directly required by this task's own deliverable, to add here rather
+    # than defer.
+    @app.get(
+        "/runtime/dead-letter",
+        response_model=list[DeadLetterEntryOut],
+        response_model_by_alias=True,
+    )
+    async def get_dead_letter_entries() -> list[DeadLetterEntryOut]:
+        return [DeadLetterEntryOut.from_entry(e) for e in runtime_channel.dead_letter.snapshot()]
 
     return app
 

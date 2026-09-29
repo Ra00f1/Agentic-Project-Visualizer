@@ -11,8 +11,12 @@
  */
 
 import type { CollectionMappingEntry, CollectionSchema, Graph } from "@shared-types/graph";
+import type { DeadLetterEntry } from "@shared-types/runtime";
 
-const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
+// Exported so runtimeChannel.ts can derive the WS URL from the same base
+// instead of hardcoding a second copy of 127.0.0.1:8765 — when the sidecar
+// wiring described above lands, both places pick up the change together.
+export const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
 
 export interface FetchGraphParams {
   /** MongoDB connection URI. */
@@ -117,6 +121,35 @@ export async function fetchSchema({
     throw new Error(`GET /schema failed (${response.status}): ${detail}`);
   }
   return (await response.json()) as CollectionSchema[];
+}
+
+export interface FetchDeadLetterEntriesParams {
+  baseUrl?: string;
+  signal?: AbortSignal;
+}
+
+/** GET /runtime/dead-letter → recent trace events NodeIndex couldn't resolve.
+ *  Feeds the DeadLetterDrawer. No uri/db params -- the dead-letter buffer is
+ *  process-global (one RuntimeChannel per sidecar), not scoped per DB.
+ *  Same error shape as the other fetch* helpers here. */
+export async function fetchDeadLetterEntries({
+  baseUrl = DEFAULT_BASE_URL,
+  signal,
+}: FetchDeadLetterEntriesParams = {}): Promise<DeadLetterEntry[]> {
+  const url = new URL("/runtime/dead-letter", baseUrl);
+
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const body = (await response.json()) as { detail?: string };
+      if (body.detail) detail = body.detail;
+    } catch {
+      // Not JSON.
+    }
+    throw new Error(`GET /runtime/dead-letter failed (${response.status}): ${detail}`);
+  }
+  return (await response.json()) as DeadLetterEntry[];
 }
 
 /**

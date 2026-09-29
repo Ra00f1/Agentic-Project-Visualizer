@@ -21,6 +21,7 @@
 import { useEffect } from "react";
 import type { GraphNode } from "@shared-types/graph";
 import { NODE_STYLE } from "../lib/nodeStyle";
+import { useRuntimeStore } from "../state/runtime";
 
 export interface DetailPanelProps {
   /** The raw domain node (post-clone-resolution — always the underlying entity). */
@@ -61,8 +62,24 @@ function AttributeRow({ label, value }: { label: string; value: unknown }) {
   );
 }
 
+/** Small colored dot + label mirroring the status colors used elsewhere
+ *  (green = active/running, red = errored) — kept local since nothing
+ *  else in the panel needs a generic status-dot component yet. */
+function RuntimeStatusDot({ status }: { status: "idle" | "active" | "errored" }) {
+  const color =
+    status === "active" ? "bg-emerald-500" : status === "errored" ? "bg-red-600" : "bg-neutral-400";
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`inline-block h-2 w-2 rounded-full ${color}`} aria-hidden />
+      <span className="capitalize">{status}</span>
+    </span>
+  );
+}
+
 export function DetailPanel({ node, clonedFromContext, onClose }: DetailPanelProps) {
   const style = NODE_STYLE[node.type];
+  // Selector on this node's own id, same O(1)-update rationale as EntityNode.
+  const runtime = useRuntimeStore((s) => s.states[node.id]);
 
   // Escape closes the panel — mirror the shortcut we already use for the
   // context menu so the whole "escape closes the last thing I opened"
@@ -149,6 +166,47 @@ export function DetailPanel({ node, clonedFromContext, onClose }: DetailPanelPro
           <AttributeRow label="source ref" value={node.provenance.sourceRef} />
           <AttributeRow label="scanned at" value={node.provenance.scannedAt} />
         </section>
+
+        {/* Only shown once this node has ever fired a trace event -- an
+           idle node with no runtime history yet doesn't need an empty
+           section taking up space. Matches Task 4's own verification
+           wording: "shows runtime section when status is not idle." */}
+        {runtime && runtime.status !== "idle" && (
+          <section className="mb-4">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+              Runtime
+            </h3>
+            <div className="mb-1 rounded border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200">
+              <RuntimeStatusDot status={runtime.status} />
+            </div>
+            <AttributeRow label="run count" value={runtime.runCount} />
+            <AttributeRow label="error count" value={runtime.errorCount} />
+            {runtime.lastError && (
+              // Captured once as `lastError`, not read via `runtime.lastError!`
+              // in the button's closure below: TS narrows the `&&` guard for
+              // this JSX block, but not through a property access inside a
+              // nested arrow function, since `runtime` could in principle be
+              // reassigned by the time it runs. A local const sidesteps that
+              // without a non-null assertion.
+              (() => {
+                const lastError = runtime.lastError;
+                return (
+                  <>
+                    <AttributeRow label="last error type" value={lastError.type} />
+                    <AttributeRow label="last error message" value={lastError.message} />
+                    <AttributeRow label="last error at" value={lastError.at} />
+                    <button
+                      onClick={() => void navigator.clipboard.writeText(lastError.traceback)}
+                      className="mt-1 rounded border border-neutral-300 px-2 py-1 text-xs text-neutral-900 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800"
+                    >
+                      Copy stack
+                    </button>
+                  </>
+                );
+              })()
+            )}
+          </section>
+        )}
 
         <section>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">

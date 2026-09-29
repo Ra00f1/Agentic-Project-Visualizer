@@ -1,0 +1,16 @@
+[project]
+name = "runtime-demo-project"
+version = "0.1.0"
+description = "Small, actually-runnable fixture for exercising the Agentic Project Visualizer's runtime-tracing overlay. Not the golden static-scanning fixture — see ../mock-agent-project for that."
+requires-python = ">=3.11"
+dependencies = [
+    "ulid-py>=1.1.0",
+    "orjson>=3.10.0",
+    "platformdirs>=4.3.0",
+]
+
+# Not an installable package — just a runnable script tree, same spirit as
+# mock-agent-project's raw `src/`. `uv run python -m runtime_demo.run_demo`
+# works off this dependency list without needing a build backend.
+[tool.uv]
+package = false

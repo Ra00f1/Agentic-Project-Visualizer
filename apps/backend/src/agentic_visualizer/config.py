@@ -51,6 +51,16 @@ class Settings(BaseSettings):
     code change. Never resolved from CWD or from Python's import path —
     always a caller-supplied absolute or explicitly-relative path."""
 
+    default_trace_log_path: str | None = None
+    """Filesystem path to a JSONL trace log (written by a target project's
+    `apv_trace` helper — see the fixture at `runtime-demo-project/apv_trace`)
+    to tail automatically at startup. Optional: when unset, the runtime
+    overlay stays inert until something else points `RuntimeChannel` at a
+    source. Matches CLAUDE.md §1's "off unless the user explicitly enables
+    it" — there's no setup-screen control for this yet, so env
+    (`AGENTIC_DEFAULT_TRACE_LOG_PATH=...`) is the only way to turn it on
+    today."""
+
 
 def get_settings() -> Settings:
     """Return a fresh Settings instance.

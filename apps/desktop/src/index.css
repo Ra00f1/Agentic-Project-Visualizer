@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
+@import "./lib/runtime-overlay.css";
 
 /*
  * Tailwind v4 uses a custom variant to opt into class-based dark mode
@@ -65,6 +66,11 @@
   --node-endpoint-bg: #FFEDD5;
   --node-endpoint-text: #7C2D12;
   --node-endpoint-border: #EA580C;
+
+  /* Runtime overlay — same in both themes, matches the "errored" red used
+     elsewhere (e.g. the header's error status text). Single definition:
+     .dark doesn't override it, so it keeps applying in dark mode too. */
+  --apv-color-error: #DC2626;
 
   /* Edge colors — same in both themes; the borders/bgs give enough contrast. */
   --edge-uses: #2563EB;

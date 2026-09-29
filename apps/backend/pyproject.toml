@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "aiofiles>=24.1.0",
     "fastapi>=0.141.1",
     "motor>=3.7.1",
     "pydantic>=2.13.4",
@@ -49,5 +50,5 @@ files = ["src/agentic_visualizer"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["motor.*", "bson.*", "pymongo.*"]
+module = ["motor.*", "bson.*", "pymongo.*", "aiofiles.*"]
 ignore_missing_imports = true

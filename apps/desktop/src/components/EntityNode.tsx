@@ -17,11 +17,21 @@
  *      needs to look focusable and hoverable. Cursor=pointer + a subtle
  *      hover ring is enough visual affordance without adding a "chevron"
  *      icon that would break the "minimal node" rule.
+ *
+ * Runtime overlay (Task 4): subscribes to `useRuntimeStore` for this node's
+ * own id, applying `.apv-node-active`/`.apv-node-errored` (see
+ * `lib/runtime-overlay.css`) to the shape wrapper. This is the ONE place
+ * that logic needs to live, since every node type funnels through here —
+ * no separate WorkflowNode/AgentNode/ToolNode/etc. components exist to
+ * modify individually (see Task 4's `## Result` for that deviation). An
+ * aggregator/cluster id never matches a real node id in the store, so the
+ * lookup is always a safe no-op (falls back to "idle") for those branches.
  */
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { NodeType } from "@shared-types/graph";
 import { NODE_STYLE } from "../lib/nodeStyle";
+import { useRuntimeStore } from "../state/runtime";
 
 /** Data payload we attach to each React Flow node. */
 export interface EntityNodeData {
@@ -45,9 +55,16 @@ export interface EntityNodeData {
   [key: string]: unknown;
 }
 
-export function EntityNode({ data }: NodeProps) {
+export function EntityNode({ id, data }: NodeProps) {
   const d = data as EntityNodeData;
   const style = NODE_STYLE[d.nodeType];
+
+  // Selector reads only this node's own slot -- Zustand's default equality
+  // means only THIS component re-renders on a delta for `id`, not every
+  // EntityNode on the graph. See this file's module docstring.
+  const runtimeStatus = useRuntimeStore((s) => s.states[id]?.status ?? "idle");
+  const runtimeClassName =
+    runtimeStatus === "active" ? "apv-node-active" : runtimeStatus === "errored" ? "apv-node-errored" : "";
 
   const handles = (
     <>
@@ -126,6 +143,32 @@ export function EntityNode({ data }: NodeProps) {
     padding: 0,
   };
 
+  // The errored ring (runtime-overlay.css's `.apv-node-errored::after`) is a
+  // pseudo-element on THIS wrapper, not on the shaped div inside it -- so it
+  // can't pick up a shape's `borderRadius`/`clipPath` via plain CSS
+  // inheritance (border-radius isn't an inherited property at all, and the
+  // wrapper itself has neither set). Mirroring each shape's own radius/clip
+  // here, in one place, keeps the ring matched to the shape it's drawn
+  // around instead of always rendering as a plain rectangle.
+  const RING_SHAPE: Record<typeof style.shape, { radius: string; clipPath: string }> = {
+    "rounded-rect": { radius: "8px", clipPath: "none" },
+    circle: { radius: "50%", clipPath: "none" },
+    hexagon: { radius: "0", clipPath: "polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)" },
+    "arrow-tag": { radius: "0", clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)" },
+  };
+  const ringShape = RING_SHAPE[style.shape];
+
+  // Exposes this node type's own border color to runtime-overlay.css's glow
+  // keyframes via `var(--apv-node-color)` -- a tool glows tool-green, an
+  // agent glows agent-blue, etc. CSS custom properties aren't in React's
+  // CSSProperties type, hence the cast.
+  const runtimeWrapperStyle: React.CSSProperties = {
+    ...shapeWrapperStyle,
+    ["--apv-node-color" as string]: style.border,
+    ["--apv-node-ring-radius" as string]: ringShape.radius,
+    ["--apv-node-ring-clip" as string]: ringShape.clipPath,
+  } as React.CSSProperties;
+
   // Small yellow ⚠ badge shown when data.warning is set — L2 attaches
   // messages here for tools whose code couldn't be resolved. The full
   // message is exposed via `title` so the browser's native tooltip does
@@ -186,7 +229,7 @@ export function EntityNode({ data }: NodeProps) {
   switch (style.shape) {
     case "hexagon":
       return (
-        <div style={shapeWrapperStyle}>
+        <div style={runtimeWrapperStyle} className={runtimeClassName}>
           <div style={{ ...base, clipPath: "polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)" }}>
             {handles}
             {label}
@@ -202,7 +245,7 @@ export function EntityNode({ data }: NodeProps) {
       // The wrapping label is fabricated inline (not the shared `label`
       // constant) because the shared one has whiteSpace:nowrap.
       return (
-        <div style={shapeWrapperStyle}>
+        <div style={runtimeWrapperStyle} className={runtimeClassName}>
           <div style={{ ...base, width: 110, height: 110, borderRadius: "50%", padding: 8 }}>
             {handles}
             <span
@@ -229,7 +272,7 @@ export function EntityNode({ data }: NodeProps) {
 
     case "arrow-tag":
       return (
-        <div style={shapeWrapperStyle}>
+        <div style={runtimeWrapperStyle} className={runtimeClassName}>
           <div style={{ ...base, clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)", paddingRight: 22 }}>
             {handles}
             {label}
@@ -241,7 +284,7 @@ export function EntityNode({ data }: NodeProps) {
     case "rounded-rect":
     default:
       return (
-        <div style={shapeWrapperStyle}>
+        <div style={runtimeWrapperStyle} className={runtimeClassName}>
           <div style={{ ...base, borderRadius: 8 }}>
             {handles}
             {label}

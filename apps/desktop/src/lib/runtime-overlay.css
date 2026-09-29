@@ -1,0 +1,56 @@
+/*
+ * Runtime overlay: glow for "active", red ring for "errored".
+ *
+ * `--apv-node-color` is set inline per-node (EntityNode.tsx, from the same
+ * `style.border` token nodeStyle.ts already resolves for that node's type)
+ * so a tool's glow is tool-colored, an agent's glow is agent-colored, etc.
+ * — colorblind users still get a type signal from shape, per CLAUDE.md §7,
+ * independent of the glow color.
+ *
+ * Applied to the shape-wrapper `<div>` in EntityNode (position: relative,
+ * already there for the warning badge), not the shaped div itself — the
+ * errored ring uses `::after` positioned via `inset`, which needs a
+ * non-static-positioned ancestor; reusing the existing wrapper avoids
+ * adding a second one just for this.
+ */
+
+.apv-node-active {
+  animation: apv-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes apv-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--apv-node-color) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 12px 4px color-mix(in srgb, var(--apv-node-color) 60%, transparent);
+  }
+}
+
+.apv-node-errored::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  /* `border-radius: inherit` doesn't work here: border-radius isn't an
+   * inherited CSS property, and the wrapper this pseudo-element belongs to
+   * never sets one anyway (only the shaped div nested inside it does, for
+   * rounded-rect/circle; hexagon/arrow-tag use clip-path instead, which
+   * `inherit` can't borrow at all). EntityNode.tsx sets these two custom
+   * properties per node type so the ring actually matches the shape it's
+   * drawn around instead of always rendering as a plain rectangle. */
+  border-radius: var(--apv-node-ring-radius, 0);
+  clip-path: var(--apv-node-ring-clip, none);
+  border: 2px solid var(--apv-color-error, #dc2626);
+  pointer-events: none;
+  /* Above the node body/handles, below the warning badge (z-index: 10). */
+  z-index: 5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apv-node-active {
+    animation: none;
+    outline: 2px solid var(--apv-node-color);
+    outline-offset: 2px;
+  }
+}
