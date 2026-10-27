@@ -37,12 +37,14 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { layoutGraph } from "./lib/layout";
 import { computeView, computeOrphanAgentIds } from "./lib/computeView";
 import { useRuntimeChannel } from "./lib/runtimeChannel";
+import { isTypingInField } from "./lib/keyboard";
 import { EntityNode, type EntityNodeData } from "./components/EntityNode";
 import { OrganicEdge } from "./components/OrganicEdge";
 import { LegendBar } from "./components/LegendBar";
 import { NodeContextMenu } from "./components/NodeContextMenu";
 import { DetailPanel } from "./components/DetailPanel";
 import { DeadLetterDrawer } from "./components/DeadLetterDrawer";
+import { RuntimeStatusChip } from "./components/RuntimeStatusChip";
 import { RuntimeErrorToasts } from "./components/RuntimeErrorToasts";
 import { SetupScreen } from "./components/SetupScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -118,13 +120,29 @@ export default function App() {
   // via onDoubleClick — the very footgun we're fixing.
   const preClickExpandedRef = useRef<Set<string>>(new Set());
 
-  // Esc key clears any active focus and search. Standard escape-to-cancel
-  // behaviour, in one place so both features share the same convention.
+  // Esc clears any active focus and search; `/` jumps focus to the search
+  // box; `f` re-centers the view (CLAUDE.md §7's keyboard-shortcut pair).
+  // Both `/` and `f` are guarded by isTypingInField so neither steals a
+  // literal "/" or "f" out of whatever the user is already typing in
+  // (including the search box itself — once focus is already there, both
+  // keys type normally instead of re-triggering their shortcut).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setFocusNodeId(null);
         setSearchText("");
+        return;
+      }
+      if (e.key === "/" && !isTypingInField(e.target)) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        setSearchPulse(true);
+        return;
+      }
+      if (e.key === "f" && !isTypingInField(e.target)) {
+        e.preventDefault();
+        // 300ms matches React Flow's own Controls panel "fit view" button.
+        rfInstanceRef.current?.fitView({ padding: 0.2, duration: 300 });
       }
     };
     window.addEventListener("keydown", onKey);
@@ -197,6 +215,14 @@ export default function App() {
   // every matching visible node (union'd with the focus chain when both
   // are active). Empty string means "no search — don't dim anything".
   const [searchText, setSearchText] = useState<string>("");
+  // Ref so the `/` keyboard shortcut (below) can focus the search input
+  // imperatively — React state can't drive DOM focus directly.
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  // One-shot visual nudge when `/` focuses the search box, so the user sees
+  // where their focus landed. `false` the rest of the time; the input's own
+  // onAnimationEnd flips it back off once the CSS animation finishes,
+  // rather than a setTimeout that could drift out of sync with the CSS.
+  const [searchPulse, setSearchPulse] = useState(false);
 
   // Aggregator ids whose subtree has already been fetched. On aggregator
   // click, if the id isn't in here, we fire /graph/subtree and merge the
@@ -751,12 +777,17 @@ export default function App() {
         </h1>
         <div className="relative mr-3">
           <input
+            ref={searchInputRef}
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search nodes…"
+            onAnimationEnd={() => setSearchPulse(false)}
+            placeholder="Search nodes… (/)"
             spellCheck={false}
-            className="w-56 rounded border border-neutral-300 bg-white px-2 py-1 pr-6 text-sm text-neutral-900 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500"
+            className={
+              "w-56 rounded border border-neutral-300 bg-white px-2 py-1 pr-6 text-sm text-neutral-900 placeholder:text-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500" +
+              (searchPulse ? " apv-search-pulse" : "")
+            }
           />
           {searchText && (
             <button
@@ -892,6 +923,7 @@ export default function App() {
             )}
             {status === "error" && <span className="text-red-600 dark:text-red-400">{error}</span>}
           </div>
+          <RuntimeStatusChip />
           <DeadLetterDrawer />
           <button
             onClick={toggleTheme}

@@ -1,0 +1,53 @@
+[project]
+name = "apv-trace"
+version = "0.1.0"
+description = "Tiny tracing helper a target agentic project ships internally, emitting the runtime overlay's trace-event JSONL log. Never a dependency of the visualizer app itself — see apps/backend/../CLAUDE.md §1."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ulid-py>=1.1.0",
+    "orjson>=3.10.0",
+    "platformdirs>=4.3.0",
+    "opentelemetry-api>=1.27.0,<2.0.0",
+    "opentelemetry-sdk>=1.27.0,<2.0.0",
+]
+
+# No new runtime dependencies for task 18: OpenInference and
+# opentelemetry-instrumentation are imported lazily inside _bootstrap.py
+# and only exist in the target's own environment if IT installed an
+# instrumentor -- apv_trace never depends on either directly.
+[project.scripts]
+apv-run = "apv_trace.run:main"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "langchain-core>=1.6.12",
+    "mypy>=2.3.1",
+    "openinference-instrumentation-langchain>=0.1.79",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "session"
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM", "TID"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src/apv_trace"]

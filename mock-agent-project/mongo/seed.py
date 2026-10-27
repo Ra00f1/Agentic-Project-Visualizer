@@ -71,7 +71,12 @@ DEFAULT_BULK_FILES = 1200
 # Anything with a `4` or `5` LEADING nibble is still an agent or workflow;
 # the second nibble distinguishes hand-curated (`0`) from bulk-generated
 # (`1`). Fixed strings so all cross-references stay stable across seed runs.
-MOD_WORKFLOW_OID = "500000000000000000000003"
+# `...0100` (not `...0003`, its value before Task 10): the original value
+# collided with dump.json's own `customer_support_pipeline` workflow, which
+# every `--drop` reseed silently overwrote with this generated workflow
+# instead -- same off-dump-range offset as MOD_COORDINATOR_OID below, which
+# never had this problem.
+MOD_WORKFLOW_OID = "500000000000000000000100"
 MOD_COORDINATOR_OID = "400000000000000000000100"
 # Model and tool shared by the coordinator and every worker. Must exist in
 # dump.json — deliberately reused so the frontend's per-consumer tool/model

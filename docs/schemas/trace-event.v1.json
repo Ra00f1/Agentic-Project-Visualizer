@@ -65,7 +65,8 @@
         "workflow",
         "agent",
         "tool",
-        "function"
+        "function",
+        "model"
       ],
       "title": "Kind",
       "type": "string"

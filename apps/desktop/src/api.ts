@@ -1,22 +1,71 @@
 /**
- * HTTP client for the Python sidecar.
+ * HTTP client for the Python backend.
  *
- * For v1 the sidecar is not yet launched from Tauri — the developer runs
- * `uvicorn` in a separate terminal. So the base URL is a plain string here,
- * defaulting to what the backend's `Settings` also defaults to (127.0.0.1:8765).
- * When we wire the sidecar (bundled Python binary launched by the Rust shell),
- * the shell will inject the real port + session token via Tauri's
- * `invoke("get_sidecar_config")` and this file becomes the single place that
- * change lands.
+ * The Tauri shell spawns the backend itself and hands this app its base
+ * URL and session token (see `src-tauri/src/backend.rs` and
+ * `src/lib/backend.ts`). Every request here goes through `request()`,
+ * which resolves that info and attaches `Authorization: Bearer <token>`
+ * when a token is present — outside Tauri (manual dev against a
+ * hand-started `uvicorn`), `getBackendInfo()` may resolve a `null` token,
+ * in which case the header is simply omitted.
+ *
+ * Each exported function still takes an optional `backend` parameter so
+ * tests can supply a fixed `BackendInfo` instead of going through the
+ * real Tauri-detection path.
  */
 
 import type { CollectionMappingEntry, CollectionSchema, Graph } from "@shared-types/graph";
-import type { DeadLetterEntry } from "@shared-types/runtime";
+import type { DeadLetterEntry, MethodConfigEntry, RuntimeConfig, TraceMethodInfo } from "@shared-types/runtime";
+import { getBackendInfo, type BackendInfo } from "./lib/backend";
 
-// Exported so runtimeChannel.ts can derive the WS URL from the same base
-// instead of hardcoding a second copy of 127.0.0.1:8765 — when the sidecar
-// wiring described above lands, both places pick up the change together.
-export const DEFAULT_BASE_URL = "http://127.0.0.1:8765";
+interface FetchInit {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+  signal?: AbortSignal;
+}
+
+/** Resolves backend info (unless one was supplied for a test), builds the
+ *  URL against its base, and attaches the bearer token when present.
+ *  Throws `Error("backend session mismatch, restart the app")` on a 401 --
+ *  per this task's own Design, a 401 here means the app's token and the
+ *  running backend's token disagree, which isn't something to retry. */
+async function request(
+  path: string,
+  { init = {}, searchParams, backend }: {
+    init?: FetchInit;
+    searchParams?: Record<string, string>;
+    backend?: BackendInfo;
+  } = {},
+): Promise<Response> {
+  const info = backend ?? (await getBackendInfo());
+  const url = new URL(path, info.baseUrl);
+  if (searchParams) {
+    for (const [key, value] of Object.entries(searchParams)) url.searchParams.set(key, value);
+  }
+
+  const headers = { ...init.headers };
+  if (info.token) headers.Authorization = `Bearer ${info.token}`;
+
+  const response = await fetch(url, { ...init, headers });
+  if (response.status === 401) {
+    throw new Error("backend session mismatch, restart the app");
+  }
+  return response;
+}
+
+/** Shared non-2xx handling for every fetch* helper below: try to surface
+ *  the backend's structured `detail` field, fall back to statusText. */
+async function errorDetail(response: Response): Promise<string> {
+  let detail = response.statusText;
+  try {
+    const body = (await response.json()) as { detail?: string };
+    if (body.detail) detail = body.detail;
+  } catch {
+    // Response wasn't JSON — keep the statusText fallback.
+  }
+  return detail;
+}
 
 export interface FetchGraphParams {
   /** MongoDB connection URI. */
@@ -38,8 +87,8 @@ export interface FetchGraphParams {
    *  collection's role, id field, name field, and parent-reference fields.
    *  Entries with role === "other" are dropped server-side. */
   mapping?: Record<string, CollectionMappingEntry>;
-  /** Override the sidecar base URL. Only useful in tests. */
-  baseUrl?: string;
+  /** Override backend resolution. Only useful in tests. */
+  backend?: BackendInfo;
   /** AbortSignal so a long scan can be cancelled if the user navigates away. */
   signal?: AbortSignal;
 }
@@ -47,7 +96,7 @@ export interface FetchGraphParams {
 export interface FetchSchemaParams {
   uri: string;
   db: string;
-  baseUrl?: string;
+  backend?: BackendInfo;
   signal?: AbortSignal;
 }
 
@@ -61,7 +110,7 @@ export interface FetchSubtreeParams {
   /** MongoDB URI and DB name — must match the parent's namespace. */
   uri: string;
   db: string;
-  baseUrl?: string;
+  backend?: BackendInfo;
   signal?: AbortSignal;
 }
 
@@ -74,80 +123,50 @@ export async function fetchSubtree({
   collection,
   uri,
   db,
-  baseUrl = DEFAULT_BASE_URL,
+  backend,
   signal,
 }: FetchSubtreeParams): Promise<Graph> {
-  const url = new URL("/graph/subtree", baseUrl);
-  url.searchParams.set("parentId", parentId);
-  url.searchParams.set("collection", collection);
-  url.searchParams.set("uri", uri);
-  url.searchParams.set("db", db);
-
-  const response = await fetch(url, { signal });
+  const response = await request("/graph/subtree", {
+    searchParams: { parentId, collection, uri, db },
+    init: { signal },
+    backend,
+  });
   if (!response.ok) {
-    let detail = response.statusText;
-    try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
-    } catch {
-      // Not JSON.
-    }
-    throw new Error(`GET /graph/subtree failed (${response.status}): ${detail}`);
+    throw new Error(`GET /graph/subtree failed (${response.status}): ${await errorDetail(response)}`);
   }
   return (await response.json()) as Graph;
 }
 
 /** GET /schema → list of collections with counts + sampled fields.
  *  Feeds the setup screen. Throws on non-2xx (same error shape as fetchGraph). */
-export async function fetchSchema({
-  uri,
-  db,
-  baseUrl = DEFAULT_BASE_URL,
-  signal,
-}: FetchSchemaParams): Promise<CollectionSchema[]> {
-  const url = new URL("/schema", baseUrl);
-  url.searchParams.set("uri", uri);
-  url.searchParams.set("db", db);
-
-  const response = await fetch(url, { signal });
+export async function fetchSchema({ uri, db, backend, signal }: FetchSchemaParams): Promise<CollectionSchema[]> {
+  const response = await request("/schema", {
+    searchParams: { uri, db },
+    init: { signal },
+    backend,
+  });
   if (!response.ok) {
-    let detail = response.statusText;
-    try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
-    } catch {
-      // Not JSON.
-    }
-    throw new Error(`GET /schema failed (${response.status}): ${detail}`);
+    throw new Error(`GET /schema failed (${response.status}): ${await errorDetail(response)}`);
   }
   return (await response.json()) as CollectionSchema[];
 }
 
 export interface FetchDeadLetterEntriesParams {
-  baseUrl?: string;
+  backend?: BackendInfo;
   signal?: AbortSignal;
 }
 
 /** GET /runtime/dead-letter → recent trace events NodeIndex couldn't resolve.
  *  Feeds the DeadLetterDrawer. No uri/db params -- the dead-letter buffer is
- *  process-global (one RuntimeChannel per sidecar), not scoped per DB.
+ *  process-global (one RuntimeChannel per backend), not scoped per DB.
  *  Same error shape as the other fetch* helpers here. */
 export async function fetchDeadLetterEntries({
-  baseUrl = DEFAULT_BASE_URL,
+  backend,
   signal,
 }: FetchDeadLetterEntriesParams = {}): Promise<DeadLetterEntry[]> {
-  const url = new URL("/runtime/dead-letter", baseUrl);
-
-  const response = await fetch(url, { signal });
+  const response = await request("/runtime/dead-letter", { init: { signal }, backend });
   if (!response.ok) {
-    let detail = response.statusText;
-    try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) detail = body.detail;
-    } catch {
-      // Not JSON.
-    }
-    throw new Error(`GET /runtime/dead-letter failed (${response.status}): ${detail}`);
+    throw new Error(`GET /runtime/dead-letter failed (${response.status}): ${await errorDetail(response)}`);
   }
   return (await response.json()) as DeadLetterEntry[];
 }
@@ -173,10 +192,9 @@ export async function fetchGraph({
   collections,
   codebaseRoot,
   mapping,
-  baseUrl = DEFAULT_BASE_URL,
+  backend,
   signal,
 }: FetchGraphParams): Promise<Graph> {
-  const url = new URL("/graph", baseUrl);
   const body: Record<string, unknown> = { uri, db };
   if (collections && collections.length > 0) {
     body.collections = collections;
@@ -197,22 +215,90 @@ export async function fetchGraph({
     }
   }
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
+  const response = await request("/graph", {
+    init: {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal,
+    },
+    backend,
   });
   if (!response.ok) {
-    // Try to surface the backend's structured detail; fall back to raw text.
-    let detail = response.statusText;
-    try {
-      const errBody = (await response.json()) as { detail?: string };
-      if (errBody.detail) detail = errBody.detail;
-    } catch {
-      // Response wasn't JSON — keep the statusText fallback.
-    }
-    throw new Error(`POST /graph failed (${response.status}): ${detail}`);
+    throw new Error(`POST /graph failed (${response.status}): ${await errorDetail(response)}`);
   }
   return (await response.json()) as Graph;
+}
+
+// --- Runtime tracing methods (Task 22) --------------------------------
+
+export interface FetchTraceMethodsParams {
+  backend?: BackendInfo;
+  signal?: AbortSignal;
+}
+
+/** GET /runtime/methods → every trace method the backend knows about, in
+ *  registry order. Feeds the Setup screen's "Runtime tracing" section and
+ *  `RuntimeStatusChip`'s live-vs-after-the-fact wording -- both generated
+ *  entirely from this list, no method-specific frontend code. */
+export async function fetchTraceMethods({
+  backend,
+  signal,
+}: FetchTraceMethodsParams = {}): Promise<TraceMethodInfo[]> {
+  const response = await request("/runtime/methods", { init: { signal }, backend });
+  if (!response.ok) {
+    throw new Error(`GET /runtime/methods failed (${response.status}): ${await errorDetail(response)}`);
+  }
+  return (await response.json()) as TraceMethodInfo[];
+}
+
+export interface FetchRuntimeConfigParams {
+  backend?: BackendInfo;
+  signal?: AbortSignal;
+}
+
+/** GET /runtime/config → which methods are currently configured and each
+ *  source's live status. Used to seed the Setup screen's checkboxes when
+ *  nothing's saved in localStorage yet (so the env-var startup default
+ *  shows up as checked) — see `SetupScreen.tsx`. */
+export async function fetchRuntimeConfig({
+  backend,
+  signal,
+}: FetchRuntimeConfigParams = {}): Promise<RuntimeConfig> {
+  const response = await request("/runtime/config", { init: { signal }, backend });
+  if (!response.ok) {
+    throw new Error(`GET /runtime/config failed (${response.status}): ${await errorDetail(response)}`);
+  }
+  return (await response.json()) as RuntimeConfig;
+}
+
+export interface PutRuntimeConfigParams {
+  methods: MethodConfigEntry[];
+  backend?: BackendInfo;
+  signal?: AbortSignal;
+}
+
+/** PUT /runtime/config → replaces the WHOLE running config with `methods`
+ *  (not a merge — an empty list turns every source off). Throws on a 422
+ *  (unknown id, duplicate id, or a setting that fails that method's own
+ *  schema) with the backend's structured `detail` in the message so the
+ *  caller can show it under the right field. */
+export async function putRuntimeConfig({
+  methods,
+  backend,
+  signal,
+}: PutRuntimeConfigParams): Promise<RuntimeConfig> {
+  const response = await request("/runtime/config", {
+    init: {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ methods }),
+      signal,
+    },
+    backend,
+  });
+  if (!response.ok) {
+    throw new Error(`PUT /runtime/config failed (${response.status}): ${await errorDetail(response)}`);
+  }
+  return (await response.json()) as RuntimeConfig;
 }

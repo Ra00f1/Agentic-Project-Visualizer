@@ -12,7 +12,7 @@ shell will inject values into the sidecar process at launch.
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,11 +33,21 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:1420",  # Tauri dev server default
-            "tauri://localhost",       # Tauri prod webview
+            "tauri://localhost",       # Tauri prod webview (macOS/Linux)
+            "http://tauri.localhost",  # Tauri prod webview (Windows, useHttpsScheme=false)
         ],
     )
     """Origins allowed to hit the sidecar. Deliberately tight — no wildcard,
     no `*`. If the frontend port changes, this list has to change with it."""
+
+    session_token: SecretStr | None = None
+    """Per-launch bearer token (task 20). `None` means auth is OFF — logged
+    once as a WARNING by `create_app`, and only reachable by running
+    `uvicorn agentic_visualizer.main:app` by hand or the existing test
+    suite; the installed app always launches through `serve.py`, which
+    always generates one. `SecretStr` so a stray `repr(settings)` in a log
+    line never leaks it — callers that need the raw value call
+    `.get_secret_value()` explicitly."""
 
     default_mongo_uri: str = "mongodb://localhost:27017"
     """Fallback URI when the client didn't specify one. Convenience only."""
@@ -53,13 +63,22 @@ class Settings(BaseSettings):
 
     default_trace_log_path: str | None = None
     """Filesystem path to a JSONL trace log (written by a target project's
-    `apv_trace` helper — see the fixture at `runtime-demo-project/apv_trace`)
-    to tail automatically at startup. Optional: when unset, the runtime
+    `apv_trace` helper — see `packages/apv_trace`) to tail automatically
+    at startup. Optional: when unset, the runtime
     overlay stays inert until something else points `RuntimeChannel` at a
     source. Matches CLAUDE.md §1's "off unless the user explicitly enables
     it" — there's no setup-screen control for this yet, so env
     (`AGENTIC_DEFAULT_TRACE_LOG_PATH=...`) is the only way to turn it on
     today."""
+
+    orphaned_span_ttl_seconds: float = 300.0
+    """How long (seconds) a trace span can sit `active` with no matching
+    `end`/`error` event before the runtime overlay's orphan-sweep loop
+    evicts it and flips the node back to `idle` -- protects against a target
+    project crashing (or being killed) mid-span and leaving a node stuck
+    `active` forever. 300s (5 min) is a conservative guess, not a measured
+    value; override with `AGENTIC_ORPHANED_SPAN_TTL_SECONDS` if a real
+    target project's legitimately-slow calls get evicted prematurely."""
 
 
 def get_settings() -> Settings:

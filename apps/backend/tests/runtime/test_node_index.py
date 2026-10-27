@@ -33,13 +33,14 @@ def _edge(source_id: str, target_id: str, kind: EdgeKind, attributes: dict[str, 
 
 def _event(
     *,
-    kind: Literal["workflow", "agent", "tool", "function"],
+    kind: Literal["workflow", "agent", "tool", "function", "model"],
     phase: Literal["start", "end", "error"] = "start",
     name: str,
     module: str = "pkg.mod",
     qualname: str | None = None,
     db_id: str | None = None,
     framework_id: str | None = None,
+    meta: dict[str, Any] | None = None,
 ) -> TraceEvent:
     return TraceEvent(
         v=1,
@@ -49,6 +50,7 @@ def _event(
         phase=phase,
         kind=kind,
         ref=TraceRef(name=name, module=module, qualname=qualname, db_id=db_id, framework_id=framework_id),
+        meta=meta or {},
     )
 
 
@@ -57,6 +59,22 @@ def test_resolves_by_db_id() -> None:
     index = NodeIndex.build(Graph(nodes=[node]))
 
     result = index.resolve(_event(kind="tool", name="lookup_kb", db_id="abc123"))
+
+    assert isinstance(result, Resolved)
+    assert result.node_ids == [node.id]
+    assert result.strategy == "db_id"
+
+
+def test_resolves_by_db_id_attribute_for_a_non_mongo_node_id() -> None:
+    """Task 9 Scope C: `attributes["db_id"]` must work for ANY connector, not
+    just nodes whose `id` happens to be `mongo:...`-prefixed -- the Mongo-id
+    parse in `_db_id_of` is a fallback now, not the only path."""
+    node = _node(
+        "postgres:mock_agent.tools:42", "tool", "lookup_kb", attributes={"db_id": "42"}
+    )
+    index = NodeIndex.build(Graph(nodes=[node]))
+
+    result = index.resolve(_event(kind="tool", name="lookup_kb", db_id="42"))
 
     assert isinstance(result, Resolved)
     assert result.node_ids == [node.id]
@@ -225,3 +243,138 @@ def test_strategy_order_prefers_db_id_over_typed_name() -> None:
     assert isinstance(result, Resolved)
     assert result.node_ids == [correct.id]
     assert result.strategy == "db_id"
+
+
+def test_model_prefix_resolves_a_dated_model_id() -> None:
+    node = _node("mongo:mock_agent.models:1", "model", "claude-sonnet-4")
+    index = NodeIndex.build(Graph(nodes=[node]))
+
+    result = index.resolve(_event(kind="model", name="claude-sonnet-4-20250514"))
+
+    assert isinstance(result, Resolved)
+    assert result.node_ids == [node.id]
+    assert result.strategy == "model_prefix"
+
+
+def test_model_prefix_picks_the_longest_candidate() -> None:
+    short = _node("mongo:mock_agent.models:1", "model", "gpt-4o")
+    long = _node("mongo:mock_agent.models:2", "model", "gpt-4o-mini")
+    index = NodeIndex.build(Graph(nodes=[short, long]))
+
+    result = index.resolve(_event(kind="model", name="gpt-4o-mini-2024-07-18"))
+
+    assert isinstance(result, Resolved)
+    assert result.node_ids == [long.id]
+    assert result.strategy == "model_prefix"
+
+
+def test_model_prefix_requires_a_dash_boundary() -> None:
+    """`claude-sonnet-45` must NOT match `claude-sonnet-4` -- the dash
+    boundary is what tells a dated snapshot apart from an unrelated model
+    whose name happens to start the same way."""
+    node = _node("mongo:mock_agent.models:1", "model", "claude-sonnet-4")
+    index = NodeIndex.build(Graph(nodes=[node]))
+
+    result = index.resolve(_event(kind="model", name="claude-sonnet-45"))
+
+    assert isinstance(result, Unresolved)
+
+
+def test_model_prefix_is_case_insensitive() -> None:
+    node = _node("mongo:mock_agent.models:1", "model", "claude-sonnet-4")
+    index = NodeIndex.build(Graph(nodes=[node]))
+
+    result = index.resolve(_event(kind="model", name="CLAUDE-SONNET-4"))
+
+    assert isinstance(result, Resolved)
+    assert result.node_ids == [node.id]
+    assert result.strategy == "model_prefix"
+
+
+def test_model_exact_name_still_resolves_through_typed_name_not_prefix() -> None:
+    node = _node("mongo:mock_agent.models:1", "model", "claude-sonnet-4")
+    index = NodeIndex.build(Graph(nodes=[node]))
+
+    result = index.resolve(_event(kind="model", name="claude-sonnet-4"))
+
+    assert isinstance(result, Resolved)
+    assert result.strategy == "typed_name"
+
+
+def test_model_prefix_ambiguous_when_two_nodes_share_the_matched_name() -> None:
+    """Two nodes sharing an EXACT duplicate name hit `by_typed_name`'s own
+    ambiguity check before `model_prefix` ever runs (see `resolve`'s
+    ordering) -- this test instead forces a tie inside `model_prefix`
+    itself: neither node's name exactly equals the ref name, so only the
+    PREFIX branch can match, and both duplicates share that prefix name."""
+    first = _node("mongo:mock_agent.models:1", "model", "gpt-4-turbo")
+    second = _node("mongo:mock_agent.models:2", "model", "gpt-4-turbo")
+    index = NodeIndex.build(Graph(nodes=[first, second]))
+
+    result = index.resolve(_event(kind="model", name="gpt-4-turbo-preview"))
+
+    assert isinstance(result, Unresolved)
+    assert "ambiguous" in result.reason
+
+
+def test_tool_kind_events_never_use_model_prefix_matching() -> None:
+    model_node = _node("mongo:mock_agent.models:1", "model", "claude-sonnet-4")
+    index = NodeIndex.build(Graph(nodes=[model_node]))
+
+    result = index.resolve(_event(kind="tool", name="claude-sonnet-4-20250514"))
+
+    assert isinstance(result, Unresolved)
+    assert "no node matches" in result.reason
+
+
+def test_no_bridge_meta_flag_resolves_the_function_only() -> None:
+    """Task 18 Verification 23: `meta.bridge: false` (from `apv-run
+    --functions --no-bridge`) must skip the `fn_to_tools` extension and
+    report the plain `module_qualname` strategy, not
+    `module_qualname+bridge`."""
+    fn_node = _node(
+        "code:runtime_demo/tools.py:10:lookup_kb_tool",
+        "function",
+        "lookup_kb_tool",
+        attributes={"file_path": "runtime_demo/tools.py", "qualname": "lookup_kb_tool"},
+    )
+    tool_node = _node("mongo:mock_agent.tools:abc", "tool", "lookup_kb")
+    edge = _edge(tool_node.id, fn_node.id, "implements")
+    index = NodeIndex.build(Graph(nodes=[fn_node, tool_node], edges=[edge]))
+
+    result = index.resolve(
+        _event(
+            kind="function",
+            name="lookup_kb_tool",
+            module="runtime_demo.tools",
+            qualname="lookup_kb_tool",
+            meta={"bridge": False},
+        )
+    )
+
+    assert isinstance(result, Resolved)
+    assert result.node_ids == [fn_node.id]  # only the function -- no tool bridged
+    assert result.strategy == "module_qualname"
+
+
+def test_missing_bridge_meta_key_still_bridges_as_before() -> None:
+    """Without the key at all (every pre-task-18 event, and every
+    `apv-run --functions` call that didn't pass `--no-bridge`), behavior
+    is unchanged."""
+    fn_node = _node(
+        "code:runtime_demo/tools.py:10:lookup_kb_tool",
+        "function",
+        "lookup_kb_tool",
+        attributes={"file_path": "runtime_demo/tools.py", "qualname": "lookup_kb_tool"},
+    )
+    tool_node = _node("mongo:mock_agent.tools:abc", "tool", "lookup_kb")
+    edge = _edge(tool_node.id, fn_node.id, "implements")
+    index = NodeIndex.build(Graph(nodes=[fn_node, tool_node], edges=[edge]))
+
+    result = index.resolve(
+        _event(kind="function", name="lookup_kb_tool", module="runtime_demo.tools", qualname="lookup_kb_tool")
+    )
+
+    assert isinstance(result, Resolved)
+    assert set(result.node_ids) == {fn_node.id, tool_node.id}
+    assert result.strategy == "module_qualname+bridge"

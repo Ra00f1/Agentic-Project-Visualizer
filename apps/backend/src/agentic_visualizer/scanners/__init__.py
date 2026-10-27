@@ -1,13 +1,14 @@
 """Scanners — the "raw data → nodes and edges" layer.
 
 Each scanner is one stage of the introspection pipeline (see CLAUDE.md §6).
-V1 ships L1 only; L2/L3/L4 are additive.
+L1-L4 all ship now; later frameworks/stages are additive.
 """
 
-from .base import Scanner, ScanContext
-from .l1_entity import L1EntityScanner, CollectionMapping, DEFAULT_COLLECTION_MAPPING
+from .base import ScanContext, Scanner
+from .l1_entity import DEFAULT_COLLECTION_MAPPING, CollectionMapping, L1EntityScanner
 from .l2_tool import L2ToolCodeScanner
 from .l3_calls import L3CallGraphScanner
+from .l4_endpoints import L4EndpointScanner
 
 __all__ = [
     "Scanner",
@@ -15,6 +16,7 @@ __all__ = [
     "L1EntityScanner",
     "L2ToolCodeScanner",
     "L3CallGraphScanner",
+    "L4EndpointScanner",
     "CollectionMapping",
     "DEFAULT_COLLECTION_MAPPING",
 ]

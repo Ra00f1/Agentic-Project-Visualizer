@@ -2,6 +2,11 @@
 
 Uses `httpx.AsyncClient` + FastAPI's ASGI transport to hit /graph without
 starting uvicorn. Also skipped when Mongo isn't reachable.
+
+`base_url="http://127.0.0.1"` (task 20): `TrustedHostMiddleware` checks
+the `Host` header against `["127.0.0.1", "localhost"]` on every request
+now — httpx's own default (`http://test`) would get a 400 before any
+route handler ever ran.
 """
 
 from __future__ import annotations
@@ -24,7 +29,7 @@ _FIXTURE_CODEBASE_ROOT = Path(__file__).parents[3] / "mock-agent-project"
 async def test_health_endpoint() -> None:
     """No DB dependency — should always pass."""
     app = create_app()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get("/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
@@ -35,7 +40,7 @@ async def test_dead_letter_endpoint_returns_empty_list_with_no_activity() -> Non
     """No DB dependency, no runtime channel activity — the DeadLetterDrawer's
     fetch must succeed with an empty list rather than 404/500."""
     app = create_app()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get("/runtime/dead-letter")
     assert r.status_code == 200
     assert r.json() == []
@@ -48,7 +53,7 @@ async def test_dead_letter_endpoint_reflects_recorded_entries() -> None:
         _unresolvable_event(),
         "no node matches ref",
     )
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get("/runtime/dead-letter")
     assert r.status_code == 200
     body = r.json()
@@ -85,7 +90,7 @@ async def test_graph_endpoint_returns_populated_graph(require_mongo) -> None:
     """
     uri, db = require_mongo
     app = create_app()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get("/graph", params={"uri": uri, "db": db})
     assert r.status_code == 200
     body = r.json()
@@ -124,7 +129,7 @@ async def test_graph_endpoint_returns_function_nodes_when_codebase_root_supplied
     assert _FIXTURE_CODEBASE_ROOT.exists(), f"fixture missing: {_FIXTURE_CODEBASE_ROOT}"
     uri, db = require_mongo
     app = create_app()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get(
             "/graph",
             params={"uri": uri, "db": db, "codebaseRoot": str(_FIXTURE_CODEBASE_ROOT)},
@@ -152,7 +157,7 @@ async def test_graph_endpoint_survives_runtime_channel_update_failure(
 
     monkeypatch.setattr(app.state.runtime_channel, "update_graph", _boom)
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         r = await client.get("/graph", params={"uri": uri, "db": db})
 
     assert r.status_code == 200
@@ -166,7 +171,7 @@ async def test_graph_endpoint_survives_runtime_channel_update_failure(
 async def test_graph_endpoint_502s_on_bad_uri() -> None:
     """Unreachable Mongo should surface as 502, not a stack trace."""
     app = create_app()
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://127.0.0.1") as client:
         # Port 1 is a well-known "nothing listens here" — fast connection refused.
         r = await client.get(
             "/graph",

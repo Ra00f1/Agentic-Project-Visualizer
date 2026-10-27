@@ -137,3 +137,23 @@ body,
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   transition: background-color 120ms ease, color 120ms ease;
 }
+
+/*
+ * One-shot focus nudge for the `/` search shortcut (App.tsx) — a brief
+ * outward ring so the user sees where their focus just landed, distinct
+ * from the browser's own persistent focus outline. `animation-fill-mode`
+ * isn't needed: the ring fades to fully transparent by 100%, so there's
+ * nothing left to "hold" after the animation ends, and App.tsx removes the
+ * class on `onAnimationEnd` regardless.
+ */
+@keyframes apv-search-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);
+  }
+}
+.apv-search-pulse {
+  animation: apv-search-pulse 300ms ease-out;
+}

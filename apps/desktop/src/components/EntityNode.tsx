@@ -30,8 +30,25 @@
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { NodeType } from "@shared-types/graph";
-import { NODE_STYLE } from "../lib/nodeStyle";
+import { NODE_STYLE, type NodeShape } from "../lib/nodeStyle";
 import { useRuntimeStore } from "../state/runtime";
+
+// The errored ring (runtime-overlay.css's `.apv-node-errored::after`) is a
+// pseudo-element on the shape wrapper, not the shaped div inside it -- so it
+// can't pick up a shape's `borderRadius`/`clipPath` via plain CSS
+// inheritance (border-radius isn't an inherited property at all, and the
+// wrapper itself has neither set). Mirroring each shape's own radius/clip
+// here, in one place, keeps the ring matched to the shape it's drawn around
+// instead of always rendering as a plain rectangle. Module-level, not
+// per-render: this depends on nothing but the fixed shape catalog, so
+// re-deriving it inside the component on every render of every node was
+// pure waste.
+const RING_SHAPE: Record<NodeShape, { radius: string; clipPath: string }> = {
+  "rounded-rect": { radius: "8px", clipPath: "none" },
+  circle: { radius: "50%", clipPath: "none" },
+  hexagon: { radius: "0", clipPath: "polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)" },
+  "arrow-tag": { radius: "0", clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)" },
+};
 
 /** Data payload we attach to each React Flow node. */
 export interface EntityNodeData {
@@ -65,6 +82,16 @@ export function EntityNode({ id, data }: NodeProps) {
   const runtimeStatus = useRuntimeStore((s) => s.states[id]?.status ?? "idle");
   const runtimeClassName =
     runtimeStatus === "active" ? "apv-node-active" : runtimeStatus === "errored" ? "apv-node-errored" : "";
+
+  // Task 23's "just ran" flash -- only while idle (an active/errored node
+  // already has its own overlay; see runtime-overlay.css's own comment).
+  // `flashSeq` only ever increments, so `> 0` means "has finished at least
+  // one span since this client connected" -- a fresh connect's snapshot
+  // never sets this (applySnapshot always starts it at 0), so reconnecting
+  // doesn't flash every node on the graph.
+  const flashSeq = useRuntimeStore((s) => s.states[id]?.flashSeq ?? 0);
+  const flashOverlay =
+    flashSeq > 0 && runtimeStatus === "idle" ? <span key={flashSeq} className="apv-node-ran" /> : null;
 
   const handles = (
     <>
@@ -143,19 +170,6 @@ export function EntityNode({ id, data }: NodeProps) {
     padding: 0,
   };
 
-  // The errored ring (runtime-overlay.css's `.apv-node-errored::after`) is a
-  // pseudo-element on THIS wrapper, not on the shaped div inside it -- so it
-  // can't pick up a shape's `borderRadius`/`clipPath` via plain CSS
-  // inheritance (border-radius isn't an inherited property at all, and the
-  // wrapper itself has neither set). Mirroring each shape's own radius/clip
-  // here, in one place, keeps the ring matched to the shape it's drawn
-  // around instead of always rendering as a plain rectangle.
-  const RING_SHAPE: Record<typeof style.shape, { radius: string; clipPath: string }> = {
-    "rounded-rect": { radius: "8px", clipPath: "none" },
-    circle: { radius: "50%", clipPath: "none" },
-    hexagon: { radius: "0", clipPath: "polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%)" },
-    "arrow-tag": { radius: "0", clipPath: "polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%)" },
-  };
   const ringShape = RING_SHAPE[style.shape];
 
   // Exposes this node type's own border color to runtime-overlay.css's glow
@@ -234,6 +248,7 @@ export function EntityNode({ id, data }: NodeProps) {
             {handles}
             {label}
           </div>
+          {flashOverlay}
           {warningBadge}
         </div>
       );
@@ -266,6 +281,7 @@ export function EntityNode({ id, data }: NodeProps) {
               {d.label}
             </span>
           </div>
+          {flashOverlay}
           {warningBadge}
         </div>
       );
@@ -277,6 +293,7 @@ export function EntityNode({ id, data }: NodeProps) {
             {handles}
             {label}
           </div>
+          {flashOverlay}
           {warningBadge}
         </div>
       );
@@ -289,6 +306,7 @@ export function EntityNode({ id, data }: NodeProps) {
             {handles}
             {label}
           </div>
+          {flashOverlay}
           {warningBadge}
         </div>
       );

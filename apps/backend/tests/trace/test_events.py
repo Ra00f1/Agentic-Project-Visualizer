@@ -119,6 +119,14 @@ def test_invalid_kind_rejected(bad_kind: str) -> None:
         TraceEvent.model_validate(payload)
 
 
+def test_model_kind_parses() -> None:
+    """Task 17: `model` is a valid kind (OpenInference LLM spans), added
+    additively on schema v1 -- an unknown kind is still rejected."""
+    payload = {**RAW_START_EVENT, "kind": "model", "ref": {**RAW_START_EVENT["ref"], "name": "claude-sonnet-4"}}
+    event = TraceEvent.model_validate(payload)
+    assert event.kind == "model"
+
+
 def test_ref_requires_non_empty_name_and_module() -> None:
     with pytest.raises(ValidationError):
         TraceRef.model_validate({"name": "", "module": "runtime_demo.tools"})

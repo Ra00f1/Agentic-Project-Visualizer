@@ -15,16 +15,25 @@
  */
 
 .apv-node-active {
-  animation: apv-glow 1.2s ease-in-out infinite;
+  animation: apv-glow 2.5s ease-in-out infinite;
 }
 
+/*
+ * Task 24 (D2): bright from the FIRST frame, not ramped up from nothing.
+ * The old keyframes started at 30% brightness and only peaked at the 50%
+ * mark of a 1.2s cycle -- invisible for a simulator step that's only
+ * active 0.2-0.4s (confirmed, Task 24 Step 0: that's over before the glow
+ * ever gets going). Pulsing between a strong 70% and the same 80% peak
+ * keeps the "running" signal legible for calls of any length instead of
+ * only ones that outlast the ramp-up.
+ */
 @keyframes apv-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--apv-node-color) 30%, transparent);
+    box-shadow: 0 0 14px 5px color-mix(in srgb, var(--apv-node-color) 70%, transparent);
   }
   50% {
-    box-shadow: 0 0 12px 4px color-mix(in srgb, var(--apv-node-color) 60%, transparent);
+    box-shadow: 0 0 18px 7px color-mix(in srgb, var(--apv-node-color) 80%, transparent);
   }
 }
 
@@ -52,5 +61,52 @@
     animation: none;
     outline: 2px solid var(--apv-node-color);
     outline-offset: 2px;
+  }
+}
+
+/*
+ * Task 23's "just ran" flash: a fading glow, played ONCE, for a node whose
+ * most recent call just completed WITHOUT ever being shown live (Task 24,
+ * D2 -- the OTLP method never shows "active" at all, so this is the only
+ * runtime feedback it ever gets; a live span this client actually watched
+ * glow gets no flash on top, since the glow already carried that signal --
+ * see `state/runtime.ts`'s `applyDelta`, which is what decides this).
+ *
+ * A `key={flashSeq}` on the `<span>` itself (EntityNode.tsx) is what
+ * restarts this animation on a later completion without any timers: React
+ * unmounts/remounts the element on a key change, which restarts a CSS
+ * animation for free. Rendered only while the node is `idle` -- a node
+ * that's still `active` (another concurrent span) gets the glow from
+ * `.apv-node-active` instead, and an `errored` node gets its red ring;
+ * stacking the flash on top of either would just be visual noise.
+ */
+.apv-node-ran {
+  position: absolute;
+  inset: -3px;
+  /* Same shape-matching custom properties `.apv-node-errored::after` uses
+   * -- see that rule's own comment for why `border-radius: inherit` can't
+   * do this job itself. */
+  border-radius: var(--apv-node-ring-radius, 0);
+  clip-path: var(--apv-node-ring-clip, none);
+  pointer-events: none;
+  z-index: 4; /* below the errored ring (5) and warning badge (10) */
+  animation: apv-node-ran-flash 2.5s ease-out forwards;
+}
+
+@keyframes apv-node-ran-flash {
+  0% {
+    box-shadow: 0 0 16px 6px color-mix(in srgb, var(--apv-node-color) 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--apv-node-color) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apv-node-ran {
+    /* The flash IS motion -- nothing meaningful to show statically, and a
+     * reduced-motion user already gets `.apv-node-active`'s outline
+     * fallback for the "still running" case this complements. */
+    display: none;
   }
 }

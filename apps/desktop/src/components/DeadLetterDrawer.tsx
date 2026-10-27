@@ -16,7 +16,15 @@ import { useRuntimeStore } from "../state/runtime";
 import type { DeadLetterEntry } from "@shared-types/runtime";
 
 export function DeadLetterDrawer() {
-  const count = useRuntimeStore((s) => s.deadLetterStats.count);
+  const stats = useRuntimeStore((s) => s.deadLetterStats);
+  const { count } = stats;
+  // Shown once ANY source is confirmed running -- a real "0, nothing
+  // unresolved" answer rather than a badge that never appeared (Task 21
+  // Fix 3, generalized to several sources in Task 22). Deliberately NOT
+  // `|| count > 0`: `count` can only be positive once a source has
+  // actually reported `"running"` at some point, so that fallback would
+  // just mask a stale count if every source later stopped.
+  const showBadge = stats.sources.some((s) => s.state === "running");
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<DeadLetterEntry[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -65,8 +73,13 @@ export function DeadLetterDrawer() {
         title="Trace events the runtime overlay couldn't match to a graph node"
       >
         Dead letters
-        {count > 0 && (
-          <span className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold leading-4 text-white">
+        {showBadge && (
+          <span
+            className={
+              "ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-4 text-white " +
+              (count > 0 ? "bg-amber-500" : "bg-neutral-400 dark:bg-neutral-600")
+            }
+          >
             {count}
           </span>
         )}
@@ -96,6 +109,40 @@ export function DeadLetterDrawer() {
                 </svg>
               </button>
             </header>
+
+            {/* Task 21 Fix 3 / Task 22: the same sources the status chip
+                summarizes, spelled out one row per source since the
+                drawer has room for them. */}
+            <div className="border-b border-neutral-200 px-4 py-2 text-[11px] text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+              {stats.sources.length > 0 ? (
+                <>
+                  {stats.sources.map((source) => (
+                    <div key={source.methodId} className="mb-1 last:mb-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                          {source.label}
+                        </span>
+                        <span>— {source.state}</span>
+                      </div>
+                      {source.detail && (
+                        <div className="truncate font-mono" title={source.detail}>
+                          {source.detail}
+                        </div>
+                      )}
+                      <div>
+                        received {source.eventsReceived} · ignored {source.eventsIgnored}
+                      </div>
+                    </div>
+                  ))}
+                  <div className="mt-1 border-t border-neutral-100 pt-1 dark:border-neutral-800">
+                    resolved {stats.eventsResolved} (total) · unresolved {count} · parse errors{" "}
+                    {stats.parseErrors} · non-trace {stats.nonTrace} · dropped {stats.dropped}
+                  </div>
+                </>
+              ) : (
+                <div>Runtime overlay is off — no trace method configured.</div>
+              )}
+            </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-3">
               {status === "loading" && (

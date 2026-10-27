@@ -7,9 +7,8 @@ imports, executes, or introspects the target project itself.
 
 from __future__ import annotations
 
-from agentic_visualizer.runtime.channel import RuntimeChannel
+from agentic_visualizer.runtime.channel import MethodConfig, RuntimeChannel
 from agentic_visualizer.runtime.dead_letter import DeadLetterBuffer, DeadLetterEntry, DLStats
-from agentic_visualizer.runtime.manager import RuntimeManager
 from agentic_visualizer.runtime.messages import (
     DeadLetterEntryOut,
     DeadLetterStatsMessage,
@@ -20,11 +19,18 @@ from agentic_visualizer.runtime.messages import (
     RuntimeMessage,
     RuntimeResetMessage,
     RuntimeSnapshotMessage,
+    SourceStatus,
 )
+from agentic_visualizer.runtime.methods import TRACE_METHODS, TraceMethod, TraceMethodInfo
 from agentic_visualizer.runtime.node_index import NodeIndex, Resolved, ResolveResult, Unresolved
 from agentic_visualizer.runtime.sources.base import TraceSource
 from agentic_visualizer.runtime.sources.file_tail import FileTailStats, FileTailTraceSource
-from agentic_visualizer.runtime.state import NodeDelta, NodeRuntimeState, RuntimeStateStore
+from agentic_visualizer.runtime.state import (
+    EvictedSpan,
+    NodeDelta,
+    NodeRuntimeState,
+    RuntimeStateStore,
+)
 
 __all__ = [
     "DLStats",
@@ -32,8 +38,10 @@ __all__ = [
     "DeadLetterEntry",
     "DeadLetterEntryOut",
     "DeadLetterStatsMessage",
+    "EvictedSpan",
     "FileTailStats",
     "FileTailTraceSource",
+    "MethodConfig",
     "NodeDelta",
     "NodeIndex",
     "NodeRuntimeState",
@@ -44,11 +52,14 @@ __all__ = [
     "RuntimeChannel",
     "RuntimeDeltaMessage",
     "RuntimeErrorInfo",
-    "RuntimeManager",
     "RuntimeMessage",
     "RuntimeResetMessage",
     "RuntimeSnapshotMessage",
     "RuntimeStateStore",
+    "SourceStatus",
+    "TRACE_METHODS",
+    "TraceMethod",
+    "TraceMethodInfo",
     "TraceSource",
     "Unresolved",
 ]

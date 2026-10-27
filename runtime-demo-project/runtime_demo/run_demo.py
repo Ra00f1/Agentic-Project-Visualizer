@@ -9,6 +9,7 @@ and how to point the visualizer backend at it.
 from __future__ import annotations
 
 import asyncio
+import os
 
 from apv_trace import configure
 
@@ -23,10 +24,16 @@ _SCRIPTED_TICKETS = [
 
 
 async def _main() -> None:
-    # No args: configure() resolves the default platformdirs path (or
-    # APV_TRACE_LOG_PATH) and generates a run_id itself — see its docstring.
+    # No args: configure() resolves the shared default_log_path() (or
+    # APV_TRACE_LOG_PATH) — see its docstring. Task 21's own Context: a
+    # demo run this fast (34 lines) is easy to point the backend at the
+    # wrong file for, so when the env var wasn't set, print the exact
+    # value to set AGENTIC_DEFAULT_TRACE_LOG_PATH to rather than making the
+    # reader go find it themselves.
     log_path = configure()
     print(f"[runtime-demo] tracing to {log_path}")
+    if "APV_TRACE_LOG_PATH" not in os.environ:
+        print(f"[runtime-demo] point the backend at it: set AGENTIC_DEFAULT_TRACE_LOG_PATH={log_path}")
 
     for ticket_text in _SCRIPTED_TICKETS:
         try:

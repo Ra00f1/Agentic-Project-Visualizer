@@ -11,6 +11,8 @@ dependencies = [
     "aiofiles>=24.1.0",
     "fastapi>=0.141.1",
     "motor>=3.7.1",
+    "opentelemetry-proto>=1.45.1",
+    "platformdirs>=4.3.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "uvicorn[standard]>=0.52.2",
@@ -22,8 +24,11 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "apv-trace",
     "httpx>=0.28.1",
     "mypy>=2.3.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.45.1",
+    "opentelemetry-sdk>=1.45.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "ruff>=0.16.2",
@@ -52,3 +57,13 @@ plugins = ["pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = ["motor.*", "bson.*", "pymongo.*", "aiofiles.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# `opentelemetry-proto`'s generated classes and `google.protobuf` have no
+# installed stubs (`types-protobuf` exists but wasn't part of Task 23's
+# approved dependency list) -- same treatment as the overrides above.
+module = ["google.protobuf.*", "opentelemetry.proto.*"]
+ignore_missing_imports = true
+
+[tool.uv.sources]
+apv-trace = { path = "../../packages/apv_trace", editable = true }

@@ -8,7 +8,7 @@ Design decisions worth naming here so they don't drift:
   between a target project's `apv_trace` emitter and this app's file-tailing
   `TraceSource`, and that emitter writes plain snake_case keys (`run_id`,
   `span_id`, `parent_span_id`, ...) without going through Pydantic at all —
-  see `runtime-demo-project/apv_trace/__init__.py`. Aliasing this model would
+  see `packages/apv_trace/src/apv_trace/`. Aliasing this model would
   make `TraceEvent.model_validate_json()` reject the exact lines the emitter
   writes. The WebSocket-facing runtime messages (task NN+2) are a separate,
   camelCase model that wraps data derived from these events — this schema
@@ -89,6 +89,6 @@ class TraceEvent(BaseModel):
     span_id: str = Field(min_length=1)
     parent_span_id: str | None = None
     phase: Literal["start", "end", "error"]
-    kind: Literal["workflow", "agent", "tool", "function"]
+    kind: Literal["workflow", "agent", "tool", "function", "model"]
     ref: TraceRef
     meta: dict[str, Any] = Field(default_factory=dict)

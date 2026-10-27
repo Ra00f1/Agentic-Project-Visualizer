@@ -9,11 +9,12 @@ Design decisions:
   which lines up with the "user-editable at runtime" rule from CLAUDE.md §3
   and keeps this endpoint testable without env fiddling.
 
-* **No middleware beyond CORS.** Auth, rate limiting, request ID injection,
-  etc. don't apply — this is a localhost-only sidecar. The Tauri shell owns
-  the "keep bad actors out" story via the shared session token, and we'll
-  wire that in when the sidecar goes behind Tauri (next slice for the
-  frontend half of today).
+* **Auth via a shared session token, not rate limiting or request IDs.**
+  `TokenAuthMiddleware` (see `security.py`) plus `TrustedHostMiddleware`
+  are the whole "keep bad actors out" story for this localhost-only
+  sidecar — the Tauri shell generates the token per launch and hands it
+  to both sides. No token configured means auth is off (dev/test only,
+  see `Settings.session_token`'s docstring).
 
 * **Errors as HTTP status codes, not as ScanErrors.** Per-item scanner
   problems become `graph.errors` in the response body (200 OK, some errors).
@@ -25,35 +26,50 @@ Design decisions:
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Any, AsyncIterator
+from typing import Annotated, Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import Body, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from pymongo.errors import PyMongoError
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .codebase import LocalCodebaseAdapter
-from .config import get_settings
+from .config import Settings, get_settings
 from .connectors import (
     CollectionSchema,
     MongoConnector,
     close_all_clients,
 )
 from .domain import Edge, Graph, Node, Provenance, ScanError, ScanResult
-from .runtime import DeadLetterEntryOut, FileTailTraceSource, RuntimeChannel
+from .runtime import (
+    TRACE_METHODS,
+    DeadLetterEntryOut,
+    MethodConfig,
+    RuntimeChannel,
+    SourceStatus,
+    TraceMethodInfo,
+)
 from .scanners import (
     DEFAULT_COLLECTION_MAPPING,
     L1EntityScanner,
     L2ToolCodeScanner,
     L3CallGraphScanner,
+    L4EndpointScanner,
     ScanContext,
 )
 from .scanners.l1_entity import _singularize, build_mapping_from_ui
+from .security import (
+    TokenAuthMiddleware,
+    websocket_origin_is_allowed,
+    websocket_subprotocol_for_token,
+)
 
 # --- Request body for POST /graph -----------------------------------------
 
@@ -84,7 +100,53 @@ class GraphRequest(BaseModel):
     collections: list[str] | None = None
     codebase_root: str | None = Field(default=None, alias="codebaseRoot")
     enable_l3: bool = Field(default=True, alias="enableL3")
+    enable_l4: bool = Field(default=True, alias="enableL4")
     mapping: dict[str, CollectionMappingEntryIn] | None = None
+
+
+# --- Request/response bodies for the runtime-method endpoints (Task 22) ---
+# No camelCase aliasing needed here -- every field name below ("id",
+# "settings", "methods", "sources") is a single word, identical either way.
+# `TraceMethodInfo`/`SourceStatus` (the richer, multi-word-field models
+# these endpoints also return) carry their own camelCase config where they're
+# defined (`runtime/methods/base.py`, `runtime/messages.py`).
+
+
+class MethodConfigIn(BaseModel):
+    """One entry of `PUT /runtime/config`'s `methods` list. `settings` is
+    validated against that method's own `settings_model` in the handler,
+    not here -- this model only has to parse the envelope."""
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    id: str
+    settings: dict[str, Any] = Field(default_factory=dict)
+
+
+class RuntimeConfigRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    methods: list[MethodConfigIn]
+
+
+class MethodConfigOut(BaseModel):
+    """Echoes one currently-running method's id + resolved settings --
+    e.g. so the Setup screen can show the ACTUAL path in use when the
+    startup env-var default turned a method on before the frontend ever
+    sent a `PUT`."""
+
+    id: str
+    settings: dict[str, Any]
+
+
+class RuntimeConfigOut(BaseModel):
+    """`GET /runtime/config`'s shape, and `PUT /runtime/config`'s response
+    (the config after applying the request, not a plain echo of it --
+    `apply_config` is the source of truth for what's actually running)."""
+
+    methods: list[MethodConfigOut]
+    sources: list[SourceStatus]
+
 
 logger = logging.getLogger("agentic_visualizer")
 
@@ -95,45 +157,85 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     Startup: start the `RuntimeChannel`'s background loops (`app.state.runtime_channel`,
     set in `create_app`), and — only if `AGENTIC_DEFAULT_TRACE_LOG_PATH` is
-    set — start tailing it. Off by default, per CLAUDE.md §1.
+    set — turn on the `apv_live_file` method pointed at it, through the same
+    `apply_config` path `PUT /runtime/config` uses. Off by default, per
+    CLAUDE.md §1. The Setup screen's own saved choice (sent via `PUT` once
+    the app is ready) REPLACES this config wholesale, same as any other
+    `apply_config` call — see `README.md`'s precedence note.
 
-    Shutdown: stop the runtime channel (which also stops its active
+    Shutdown: stop the runtime channel (which also stops every running
     TraceSource), then release the cached motor client pools so the process
     exits cleanly instead of leaving TCP connections open until GC eventually
     runs.
     """
     runtime_channel: RuntimeChannel = app.state.runtime_channel
     await runtime_channel.start()
-    settings = get_settings()
+    settings: Settings = app.state.settings
     if settings.default_trace_log_path:
-        await runtime_channel.set_source(FileTailTraceSource(Path(settings.default_trace_log_path)))
+        logger.info("runtime: tailing %s", settings.default_trace_log_path)
+        apv_live_file = TRACE_METHODS["apv_live_file"]
+        startup_settings = apv_live_file.settings_model.model_validate(
+            {"path": settings.default_trace_log_path}
+        )
+        await runtime_channel.apply_config([MethodConfig(id="apv_live_file", settings=startup_settings)])
+    else:
+        logger.info("runtime: no trace log configured (AGENTIC_DEFAULT_TRACE_LOG_PATH unset)")
     yield
     await runtime_channel.stop()
     await close_all_clients()
 
 
-def create_app() -> FastAPI:
+def create_app(settings: Settings | None = None) -> FastAPI:
     """Factory pattern — one line of code away from spinning up a test app
     with different settings. FastAPI's `create_app` idiom.
+
+    `settings` is injectable (task 20) rather than always going through
+    env: `serve.py` builds one with a freshly-generated `session_token`
+    and hands it straight in, so the token never has to round-trip
+    through `AGENTIC_SESSION_TOKEN` (readable by any same-user process)
+    just to reach this function. Every existing caller that still calls
+    `create_app()` with no argument is unaffected — it falls back to
+    `get_settings()`, same as before this parameter existed.
     """
-    settings = get_settings()
+    if settings is None:
+        settings = get_settings()
     app = FastAPI(title="agentic-visualizer", version="0.1.0", lifespan=_lifespan)
+    app.state.settings = settings
 
     # Owns NodeIndex/RuntimeStateStore/DeadLetterBuffer and the /ws/runtime
     # fan-out. Stashed on app.state (not just a closure var) because
     # `_lifespan` needs it and is defined outside this factory, receiving
     # only `app` — the standard FastAPI pattern for a resource both the
     # lifespan and route handlers need.
-    runtime_channel = RuntimeChannel()
+    runtime_channel = RuntimeChannel(orphaned_span_ttl_seconds=settings.orphaned_span_ttl_seconds)
     app.state.runtime_channel = runtime_channel
+
+    # Middleware order, outermost first: TrustedHost -> CORS -> token auth
+    # -> app. Starlette builds the stack so the LAST `add_middleware` call
+    # ends up OUTERMOST (confirmed against the installed Starlette's own
+    # `build_middleware_stack`), so these three calls are deliberately in
+    # the REVERSE of that order. CORS has to wrap the token check so a 401
+    # response still carries CORS headers -- otherwise the webview reports
+    # an opaque CORS failure instead of a 401 it could act on.
+    #
+    # D2: no token configured means auth is OFF, not a 500 on every
+    # request. `uvicorn agentic_visualizer.main:app` and this app's own
+    # test suite rely on that — the installed app always launches through
+    # `serve.py`, which always generates a token, so this path is never
+    # reachable there.
+    if settings.session_token is not None:
+        app.add_middleware(TokenAuthMiddleware, token=settings.session_token.get_secret_value())
+    else:
+        logger.warning("running without a session token — every endpoint is open (dev/test only)")
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=False,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PUT"],  # PUT: /runtime/config (Task 22)
         allow_headers=["*"],
     )
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
 
     @app.get("/health")
     async def health() -> dict[str, str]:
@@ -224,6 +326,18 @@ def create_app() -> FastAPI:
                 ),
             ),
         ] = True,
+        enable_l4: Annotated[
+            bool,
+            Query(
+                alias="enableL4",
+                description=(
+                    "When true (default) and a codebase root is configured, L4 "
+                    "runs and emits `endpoint` nodes (FastAPI/Flask routes) and "
+                    "`exposes` edges to their handler functions. Independent of "
+                    "enableL3 — L4 walks the codebase itself."
+                ),
+            ),
+        ] = True,
     ) -> Graph:
         """Run the L1 scanner against `db` on `uri` and return the merged graph.
 
@@ -246,6 +360,7 @@ def create_app() -> FastAPI:
             mapping=mapping,
             codebase_root=codebase_root,
             enable_l3=enable_l3,
+            enable_l4=enable_l4,
             settings=settings,
         )
 
@@ -300,6 +415,7 @@ def create_app() -> FastAPI:
             mapping=mapping,
             codebase_root=body.codebase_root,
             enable_l3=body.enable_l3,
+            enable_l4=body.enable_l4,
             settings=settings,
         )
 
@@ -310,14 +426,16 @@ def create_app() -> FastAPI:
         mapping: Any,
         codebase_root: str | None,
         enable_l3: bool,
+        enable_l4: bool,
         settings: Any,
     ) -> Graph:
         """Shared scan orchestration for GET and POST /graph.
 
         Runs L1 always, L2 when a codebase root is available, L3 after L2
-        when enable_l3 is true. Wraps everything in the same partial-
-        success semantics: scanner errors become ScanErrors on the Graph
-        instead of HTTP 5xx.
+        when enable_l3 is true, L4 (independently of L3 — it walks the
+        codebase itself) when enable_l4 is true. Wraps everything in the
+        same partial-success semantics: scanner errors become ScanErrors
+        on the Graph instead of HTTP 5xx.
         """
         try:
             async with MongoConnector(uri=uri, db_name=db) as connector:
@@ -363,6 +481,14 @@ def create_app() -> FastAPI:
                             l3_scanner = L3CallGraphScanner(codebase=adapter)
                             l3_result = await l3_scanner.scan(context)
                             results.append(l3_result)
+                        # L4 (endpoints) doesn't depend on L3's output --
+                        # it emits its own function node per handler (see
+                        # l4_endpoints/scanner.py's module docstring) --
+                        # so it's independently opt-out via enable_l4.
+                        if enable_l4:
+                            l4_scanner = L4EndpointScanner(codebase=adapter)
+                            l4_result = await l4_scanner.scan(context)
+                            results.append(l4_result)
                 else:
                     # "Silent skip" — emit an advisory ScanError when tools
                     # exist but no codebase root was configured. Feeds the
@@ -480,7 +606,7 @@ def create_app() -> FastAPI:
                 ),
             )
 
-        scanned_at = datetime.now(tz=timezone.utc)
+        scanned_at = datetime.now(tz=UTC)
         provenance_template_source = "l1_entity"
 
         nodes: list[Node] = []
@@ -561,14 +687,28 @@ def create_app() -> FastAPI:
     # then deltas/dead-letter-stats/resets as they happen. No client->server
     # messages are expected; this is purely server push.
     #
-    # No auth. Every other endpoint on this sidecar is equally open today —
-    # see this module's own docstring: "we'll wire that in when the sidecar
-    # goes behind Tauri." Adding a session token to just this one new
-    # endpoint, ahead of the rest of the app, would be a half-measure that
-    # contradicts that already-documented sequencing. See Task 3's `## Result`.
+    # Auth (task 20): a browser can't set a custom header on a WebSocket
+    # handshake, so the token travels as a `Sec-WebSocket-Protocol` entry
+    # instead of `Authorization` — see `security.py`'s module docstring.
+    # Same D2 as the HTTP side: `settings.session_token is None` means
+    # auth (both the origin check and the token check) is off, matching
+    # every other endpoint's dev/test-only open mode.
     @app.websocket("/ws/runtime")
     async def ws_runtime(websocket: WebSocket) -> None:
-        await websocket.accept()
+        if settings.session_token is not None:
+            origin = websocket.headers.get("origin")
+            if not websocket_origin_is_allowed(origin, settings.cors_origins):
+                await websocket.close(code=1008)
+                return
+            subprotocol = websocket_subprotocol_for_token(
+                websocket.scope.get("subprotocols") or [], settings.session_token.get_secret_value()
+            )
+            if subprotocol is None:
+                await websocket.close(code=1008)
+                return
+            await websocket.accept(subprotocol=subprotocol)
+        else:
+            await websocket.accept()
         subscriber = runtime_channel.subscribe()
         try:
             await websocket.send_text(runtime_channel.snapshot_message().model_dump_json(by_alias=True))
@@ -594,6 +734,54 @@ def create_app() -> FastAPI:
     )
     async def get_dead_letter_entries() -> list[DeadLetterEntryOut]:
         return [DeadLetterEntryOut.from_entry(e) for e in runtime_channel.dead_letter.snapshot()]
+
+    # --- /runtime/methods, /runtime/config (Task 22) ----------------------
+    # Lists the trace methods the Setup screen can offer, and reads/replaces
+    # which ones are actually running. See `runtime/methods/__init__.py`'s
+    # docstring for how a method gets added to TRACE_METHODS.
+
+    @app.get("/runtime/methods", response_model=list[TraceMethodInfo], response_model_by_alias=True)
+    async def get_runtime_methods() -> list[TraceMethodInfo]:
+        return [method.info() for method in TRACE_METHODS.values()]
+
+    async def _runtime_config_response() -> RuntimeConfigOut:
+        methods = [
+            MethodConfigOut(id=entry.id, settings=entry.settings.model_dump(mode="json", by_alias=True))
+            for entry in await runtime_channel.active_methods()
+        ]
+        sources = await runtime_channel.source_statuses()
+        return RuntimeConfigOut(methods=methods, sources=sources)
+
+    @app.get("/runtime/config", response_model=RuntimeConfigOut, response_model_by_alias=True)
+    async def get_runtime_config() -> RuntimeConfigOut:
+        return await _runtime_config_response()
+
+    @app.put("/runtime/config", response_model=RuntimeConfigOut, response_model_by_alias=True)
+    async def put_runtime_config(body: Annotated[RuntimeConfigRequest, Body()]) -> RuntimeConfigOut:
+        """Replaces the whole running config with `body.methods` -- not a
+        merge. Unknown id, a duplicate id, or settings that fail that
+        method's own `settings_model` all 422 BEFORE anything is
+        started/stopped, so a bad request never leaves the channel
+        half-applied."""
+        seen_ids: set[str] = set()
+        entries: list[MethodConfig] = []
+        for item in body.methods:
+            if item.id in seen_ids:
+                raise HTTPException(status_code=422, detail=f"duplicate method id: {item.id!r}")
+            seen_ids.add(item.id)
+            method = TRACE_METHODS.get(item.id)
+            if method is None:
+                raise HTTPException(status_code=422, detail=f"unknown trace method id: {item.id!r}")
+            try:
+                settings = method.settings_model.model_validate(item.settings)
+            except ValidationError as exc:
+                raise HTTPException(
+                    status_code=422, detail={"id": item.id, "errors": exc.errors(include_url=False)}
+                ) from exc
+            entries.append(MethodConfig(id=item.id, settings=settings))
+
+        await runtime_channel.apply_config(entries)
+        return await _runtime_config_response()
 
     return app
 

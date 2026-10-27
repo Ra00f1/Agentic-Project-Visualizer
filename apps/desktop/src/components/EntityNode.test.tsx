@@ -29,8 +29,10 @@ function renderNode(data: EntityNodeData, id = "n1") {
   );
 }
 
+const EMPTY_DEAD_LETTER_STATS = { count: 0, dropped: 0, parseErrors: 0, nonTrace: 0, eventsResolved: 0, sources: [] };
+
 beforeEach(() => {
-  useRuntimeStore.setState({ states: {}, deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 } });
+  useRuntimeStore.setState({ states: {}, deadLetterStats: EMPTY_DEAD_LETTER_STATS });
 });
 
 describe("EntityNode runtime overlay", () => {
@@ -42,8 +44,10 @@ describe("EntityNode runtime overlay", () => {
 
   it("applies apv-node-active when the store reports this node as active", () => {
     useRuntimeStore.setState({
-      states: { n1: { status: "active", runCount: 1, errorCount: 0, lastError: null } },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      states: {
+        n1: { status: "active", runCount: 1, errorCount: 0, lastError: null, lastEndedAt: null, flashSeq: 0 },
+      },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
     });
     const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
 
@@ -59,9 +63,11 @@ describe("EntityNode runtime overlay", () => {
           runCount: 2,
           errorCount: 1,
           lastError: { type: "RuntimeError", message: "boom", traceback: "...", at: "2026-01-01T00:00:00Z" },
+          lastEndedAt: "2026-01-01T00:00:00Z",
+          flashSeq: 1,
         },
       },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
     });
     const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
 
@@ -71,8 +77,17 @@ describe("EntityNode runtime overlay", () => {
 
   it("only reacts to state for its OWN id, not other nodes'", () => {
     useRuntimeStore.setState({
-      states: { "some-other-node": { status: "active", runCount: 1, errorCount: 0, lastError: null } },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      states: {
+        "some-other-node": {
+          status: "active",
+          runCount: 1,
+          errorCount: 0,
+          lastError: null,
+          lastEndedAt: null,
+          flashSeq: 0,
+        },
+      },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
     });
     const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
 
@@ -93,5 +108,55 @@ describe("EntityNode runtime overlay", () => {
     expect(container.querySelector(".apv-node-active")).toBeNull();
     expect(container.querySelector(".apv-node-errored")).toBeNull();
     expect(screen.getByText(/Files \(12\)/)).toBeInTheDocument();
+  });
+
+  it("renders the apv-node-ran flash when idle with a positive flashSeq", () => {
+    useRuntimeStore.setState({
+      states: {
+        n1: {
+          status: "idle",
+          runCount: 1,
+          errorCount: 0,
+          lastError: null,
+          lastEndedAt: "2026-01-01T00:00:00Z",
+          flashSeq: 1,
+        },
+      },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
+    });
+    const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
+
+    expect(container.querySelector(".apv-node-ran")).not.toBeNull();
+  });
+
+  it("does NOT render the flash while active, even with a positive flashSeq", () => {
+    useRuntimeStore.setState({
+      states: {
+        n1: {
+          status: "active",
+          runCount: 2,
+          errorCount: 0,
+          lastError: null,
+          lastEndedAt: "2026-01-01T00:00:00Z",
+          flashSeq: 1,
+        },
+      },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
+    });
+    const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
+
+    expect(container.querySelector(".apv-node-ran")).toBeNull();
+  });
+
+  it("does NOT render the flash when idle with flashSeq still at 0 (never finished a span)", () => {
+    useRuntimeStore.setState({
+      states: {
+        n1: { status: "idle", runCount: 0, errorCount: 0, lastError: null, lastEndedAt: null, flashSeq: 0 },
+      },
+      deadLetterStats: EMPTY_DEAD_LETTER_STATS,
+    });
+    const { container } = renderNode({ label: "my_tool", nodeType: "tool" }, "n1");
+
+    expect(container.querySelector(".apv-node-ran")).toBeNull();
   });
 });

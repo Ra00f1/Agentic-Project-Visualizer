@@ -1,0 +1,22 @@
+[project]
+name = "mock-agent-project"
+version = "0.1.0"
+description = "Golden static-scanning fixture for the Agentic Project Visualizer (src/ — see its own README, nothing there is meant to run), plus simulator/ — a separate, actually-runnable simulator that drives the same seeded mock_agent Mongo records. See mock-agent-project/README.md and simulator/README.md."
+requires-python = ">=3.11"
+dependencies = [
+    "apv-trace",
+    "platformdirs>=4.3.0",
+    "pymongo>=4.9.0",
+]
+
+# Not an installable package: `src/` is a static-analysis fixture (never
+# imported — see its own README's "nothing here is meant to run"), and
+# `simulator/` is a runnable script tree in the same spirit as
+# runtime-demo-project. `uv run python -m simulator.ui` / `uv run python
+# -m simulator.build_manifest` work off this dependency list without a
+# build backend.
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+apv-trace = { path = "../packages/apv_trace", editable = true }

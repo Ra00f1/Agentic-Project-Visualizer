@@ -46,6 +46,19 @@ const NODE_HEIGHT = 44;
  *  the previous. Small enough that scrolling between workflows stays cheap. */
 const WORKFLOW_REGION_GAP = 120;
 
+/** Single-parent y-snap tuning (see `_snapSingleParentChildren`). Both
+ *  margins are evaluated BEFORE the outer `layoutGraph`'s fan-in x-shift and
+ *  collision-resolution passes run — same-rank nodes sit at (near-)identical
+ *  x at this point, and adjacent ranks are always `NODE_WIDTH + rankSep`
+ *  (>= 220 with the smallest configured rankSep) apart, so a margin well
+ *  under that safely distinguishes "same column" from "next column" without
+ *  needing to know the caller's actual rankSep. */
+const SNAP_HORIZONTAL_OVERLAP_MARGIN = 100;
+const SNAP_VERTICAL_OVERLAP_MARGIN = NODE_HEIGHT + 8;
+/** Below this, two y-values are "already aligned" -- skip the snap (and the
+ *  overlap scan) rather than reassign a position that wouldn't visibly move. */
+const SNAP_EPSILON = 0.5;
+
 export interface LayoutOptions {
   /** Direction — LR (left→right, our default), TB (top→bottom), etc. */
   direction?: "LR" | "TB" | "RL" | "BT";
@@ -142,8 +155,14 @@ export function layoutGraph(
   }
   const outById = new Map(outNodes.map((n) => [n.id, n]));
   // Group parent ids by target to find shared-across-partitions targets.
+  // Synthetic (aggregator/cluster/clone) edges are excluded for the same
+  // reason `_snapSingleParentChildren` excludes them below: they're UI
+  // structure, not a real "this is the node's parent" relationship, and
+  // counting one toward a node's parent set could wrongly flag a genuinely
+  // single-real-parent node as cross-partition-shared (or vice versa).
   const parentsByTarget = new Map<string, string[]>();
   for (const e of edges) {
+    if (_isSyntheticId(e.source) || _isSyntheticId(e.target)) continue;
     const srcPart = nodeIdToPartition.get(e.source);
     const tgtPart = nodeIdToPartition.get(e.target);
     if (!srcPart || !tgtPart) continue;
@@ -169,6 +188,20 @@ export function layoutGraph(
     const midY = parentYs.reduce((a, b) => a + b, 0) / parentYs.length;
     targetNode.position = { x: targetNode.position.x, y: midY };
   }
+
+  // Re-run the single-parent snap here, over the FULL composed node/edge
+  // set, now that cross-partition recentering (above) has finished moving
+  // shared nodes. `_snapSingleParentChildren` already ran once per-partition
+  // inside each `_dagreLayout`/`_tieredBfsLayout` call above -- that's
+  // sufficient for the common case, but not for a single-parent node whose
+  // ONE parent is itself a cross-partition-shared node: that parent's y
+  // wasn't at its final position yet when the per-partition snap ran, so
+  // the child snapped to a since-superseded value. E.g. `document_query`
+  // shared across a workflow partition and an orphan-agent partition gets
+  // recentered above; `_document_query` (its function, single-parent) needs
+  // a second look at that FINAL position. A no-op for every node whose
+  // parent didn't move in the interim (SNAP_EPSILON skip fires immediately).
+  _snapSingleParentChildren(outNodes, edges);
 
   // High-fan-in x-offset — Compact mode only. Nodes with many parents
   // get pushed rightward so incoming edges have room to spread. Tiered
@@ -285,6 +318,126 @@ export function layoutGraph(
 }
 
 // ---------------------------------------------------------------------------
+// Internal: single-parent y-alignment snap.
+//
+// Dagre (and our BFS tiered layout) place a node at the vertical average of
+// its ancestry rather than in line with its immediate parent -- fine when a
+// node genuinely has several parents, but for the common case of a node with
+// exactly ONE incoming edge, "aligned with my one parent" reads as correct
+// and "somewhere between my parent and my parent's other ancestors" reads as
+// a bug. This nudges single-parent nodes onto their parent's y, skipping the
+// nudge if another node already occupies that (rank, y) slot.
+// ---------------------------------------------------------------------------
+
+/** Matches a clone id's `<originalId>@<cloneScope>` shape (`computeView.ts`:
+ *  `` `${e.targetId}@${cloneScope}` ``) specifically, not just "contains an
+ *  `@` anywhere" -- `cloneScope` is always itself a real node id (a source
+ *  node's own id, or a cluster's `parentSourceId`), and every real node id
+ *  this app produces (`mongo:<db>.<collection>:<oid>`, `code:<path>:<name>`)
+ *  contains a `:` after its source prefix. Requiring a `:` somewhere after
+ *  the `@` is what distinguishes an actual clone id from a real node id that
+ *  merely contains an `@` for an unrelated reason -- e.g. a user who mapped
+ *  a collection's `id_field` to an email-like value (`owner@example.com`
+ *  has no `:` after the `@`, so it doesn't match). */
+const CLONE_ID_PATTERN = /@.*:/;
+
+/** UI-synthesized ids (aggregators, clusters, per-consumer clones) don't
+ *  represent a real "this is the node's parent" edge for alignment purposes
+ *  -- an aggregator fan-in of 200 files, or a clone edge rewritten for one
+ *  consumer, would misclassify a node's true parent count. Recognized by id
+ *  shape (see `computeView.ts`'s id conventions) rather than threading
+ *  `rawGraph`'s edge list through the whole layout pipeline just for this. */
+function _isSyntheticId(id: string): boolean {
+  return id.startsWith("aggregator:") || id.startsWith("cluster:") || CLONE_ID_PATTERN.test(id);
+}
+
+/** Safety cap on `_snapSingleParentChildren`'s fixpoint loop (see its own
+ *  doc comment for why a single pass isn't enough). Layout depth in this
+ *  app tops out around a dozen ranks even in pathological fixtures, so this
+ *  is generous headroom, not a real limit anyone should hit in practice --
+ *  it exists purely so a future graph shape that oscillates can't hang the
+ *  render loop; it stops at "still not converged" rather than looping forever. */
+const SNAP_MAX_ITERATIONS = 20;
+
+/** One left-to-right sweep of the single-parent snap. Returns whether any
+ *  node actually moved, so the fixpoint loop below knows when to stop.
+ *  `parentsByTarget` is built once by the caller and reused across every
+ *  iteration of that loop -- it depends only on edge topology, which never
+ *  changes mid-fixpoint, so rebuilding it per pass would be pure waste on
+ *  the largest edge list (the outer `layoutGraph` call's fully composed
+ *  graph, run up to `SNAP_MAX_ITERATIONS` times in the worst case). */
+function _snapSingleParentChildrenOnePass(
+  positioned: RfNode[],
+  parentsByTarget: ReadonlyMap<string, ReadonlySet<string>>,
+): boolean {
+  const nodeById = new Map(positioned.map((n) => [n.id, n]));
+  let anyMoved = false;
+  for (const node of positioned) {
+    const parentIds = parentsByTarget.get(node.id);
+    if (!parentIds || parentIds.size !== 1) continue; // no parent, or shared by >1 -- dagre's average stands
+    const parent = nodeById.get([...parentIds][0]!);
+    if (!parent) continue;
+    const targetY = parent.position.y;
+    if (Math.abs(node.position.y - targetY) < SNAP_EPSILON) continue; // already aligned
+    const wouldOverlap = positioned.some(
+      (other) =>
+        other.id !== node.id &&
+        Math.abs(other.position.x - node.position.x) < SNAP_HORIZONTAL_OVERLAP_MARGIN &&
+        Math.abs(other.position.y - targetY) < SNAP_VERTICAL_OVERLAP_MARGIN,
+    );
+    if (wouldOverlap) continue; // keep dagre's placement -- a slightly-off child beats an overlapping one
+    node.position = { x: node.position.x, y: targetY };
+    anyMoved = true;
+  }
+  return anyMoved;
+}
+
+/** Mutates `positioned[i].position.y` in place for every node with exactly
+ *  one real (non-synthetic) parent, snapping it to that parent's y -- so
+ *  call this after any other y-adjusting post-process (e.g. the
+ *  workflow/children midpoint passes below) whose output should feed the
+ *  snap, not fight it. Must run before the OUTER `layoutGraph`'s fan-in
+ *  x-shift and collision-resolution passes (see the margin constants'
+ *  comment) since those change x/y in ways this function's cheap overlap
+ *  check doesn't account for.
+ *
+ *  Loops to a fixpoint rather than a single sweep. A single pass is order-
+ *  dependent: node B's overlap check can be blocked by node C's PRE-snap
+ *  position, even though C moves away on its own turn later in that same
+ *  sweep -- observed live on `mock_agent`'s Writer Agent branch, where
+ *  `_index_ingest`'s snap to its parent `index_ingest` was blocked by
+ *  `_citation_lookup` sitting exactly there, only for `_citation_lookup`
+ *  itself to snap away to ITS OWN parent a few nodes later in the same
+ *  pass. Re-running the sweep until nothing moves (or the safety cap above
+ *  is hit) resolves this: the previously-blocked node gets a clear shot on
+ *  the next pass once its blocker has relocated. This supersedes this
+ *  task's own Risk section, which anticipated only a grandchild-cascade
+ *  reason to extend past one pass -- the sibling-ordering case above turned
+ *  up during this task's own manual verification, not as a hypothetical.
+ *
+ *  Exported (unlike this file's other internals) so the overlap-skip and
+ *  multi-parent-no-op edge cases can be unit-tested directly against known
+ *  input positions -- constructing a graph shape that forces dagre or the
+ *  BFS tiered layout to produce a SPECIFIC colliding position, just to
+ *  exercise this function's overlap check, would make those tests fragile
+ *  and opaque. `layout.test.ts` covers the primary "snaps to my one parent"
+ *  behavior through the public `layoutGraph` entry point instead, per this
+ *  task's own Design section. */
+export function _snapSingleParentChildren(positioned: RfNode[], edges: RfEdge[]): void {
+  const parentsByTarget = new Map<string, Set<string>>();
+  for (const e of edges) {
+    if (_isSyntheticId(e.source) || _isSyntheticId(e.target)) continue;
+    const set = parentsByTarget.get(e.target) ?? new Set<string>();
+    set.add(e.source);
+    parentsByTarget.set(e.target, set);
+  }
+  for (let i = 0; i < SNAP_MAX_ITERATIONS; i++) {
+    const anyMoved = _snapSingleParentChildrenOnePass(positioned, parentsByTarget);
+    if (!anyMoved) break;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Internal: single-graph dagre pass.
 // ---------------------------------------------------------------------------
 
@@ -384,6 +537,8 @@ function _dagreLayout(
       n.position = { ...n.position, y: midY };
     }
   }
+
+  _snapSingleParentChildren(positioned, edges);
 
   return { nodes: positioned, edges };
 }
@@ -554,6 +709,8 @@ function _tieredBfsLayout(
     const p = positionsById.get(n.id) ?? { x: 0, y: 0 };
     return { ...n, position: p };
   });
+
+  _snapSingleParentChildren(positioned, edges);
 
   return { nodes: positioned, edges };
 }

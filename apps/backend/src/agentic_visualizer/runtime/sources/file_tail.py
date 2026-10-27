@@ -32,10 +32,12 @@ import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import aiofiles
 from pydantic import ValidationError
 
+from agentic_visualizer.runtime.messages import SourceStatus
 from agentic_visualizer.trace.events import TraceEvent
 
 logger = logging.getLogger("agentic_visualizer")
@@ -43,6 +45,11 @@ logger = logging.getLogger("agentic_visualizer")
 _POLL_INTERVAL_SECONDS = 0.05
 _MISSING_FILE_POLL_SECONDS = 0.2
 _READ_CHUNK_BYTES = 65536
+_PREFILTER_WINDOW_BYTES = 20
+"""How many leading bytes of a line `_looks_like_trace_event` inspects for
+`"v":1` -- see that function's docstring for why 20 is generous enough for
+our own compact `orjson.dumps` output without being so large it starts
+costing real time on every non-trace line in a log with mixed writers."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,11 +60,41 @@ class FileTailStats:
     """Events evicted from the bounded queue because a consumer fell behind."""
 
     parse_error_count: int
-    """Lines that failed `TraceEvent.model_validate_json` and were skipped."""
+    """Lines that PASSED the cheap trace-event pre-filter (so they looked like
+    our wire format) but failed `TraceEvent.model_validate_json` -- "something
+    that looked like our format but violated the schema," the actionable
+    signal once non-trace noise is filtered out separately (see
+    `non_trace_count`)."""
 
     io_error_count: int
     """Transient read/reopen failures (disk hiccup, a share-violation during
     rotation) that were caught and retried rather than killing the reader."""
+
+    non_trace_count: int
+    """Lines that failed the cheap pre-filter (`_looks_like_trace_event`) and
+    were skipped WITHOUT attempting to parse them -- a target project that
+    mixes `print()`/stdlib `logging` output into the same file produces a lot
+    of these; they are not errors, just noise the tailer silently steps over."""
+
+
+def _looks_like_trace_event(line: bytes) -> bool:
+    """Cheap byte-level pre-filter, run on every line BEFORE the Pydantic
+    parse -- it has to be fast since it also runs on every line we're about
+    to throw away. Two checks: starts with `{`, and contains the exact
+    substring `"v":1` within the first `_PREFILTER_WINDOW_BYTES` bytes (our
+    own emitter writes `v` as the first key of a compact, no-whitespace
+    `orjson.dumps` object, so it lands in the first handful of bytes).
+
+    False positives (a non-trace JSON line that happens to contain `"v":1`
+    early) still hit the Pydantic path below and either succeed or increment
+    `parse_error_count` -- same as before this pre-filter existed. False
+    negatives (a trace line written with unexpected whitespace/key order)
+    would require a non-compliant emitter; `packages/apv_trace` always
+    writes compact, `v`-first JSON, so this is tight for both consumers in
+    this repo. See `packages/apv_trace/README.md`'s note that external
+    emitters must match this wire format.
+    """
+    return line[:1] == b"{" and b'"v":1' in line[:_PREFILTER_WINDOW_BYTES]
 
 
 async def _stat_ino_and_size(path: Path) -> tuple[int, int] | None:
@@ -95,6 +132,21 @@ class FileTailTraceSource:
         self._dropped_count = 0
         self._parse_error_count = 0
         self._io_error_count = 0
+        self._non_trace_count = 0
+        self._state: Literal["waiting_for_file", "tailing"] = "waiting_for_file"
+
+    @property
+    def path(self) -> Path:
+        """The path this source tails. Read by `RuntimeChannel` to report
+        where the overlay is looking (Task 21, Fix 3)."""
+        return self._path
+
+    @property
+    def state(self) -> Literal["waiting_for_file", "tailing"]:
+        """`"waiting_for_file"` until the path first exists and is opened,
+        `"tailing"` from then on (rotation/reopen doesn't revert this --
+        the file existing again is implicit in reopening it)."""
+        return self._state
 
     def stats(self) -> FileTailStats:
         """Snapshot of the health counters. Safe to call from any task."""
@@ -102,12 +154,30 @@ class FileTailTraceSource:
             dropped_count=self._dropped_count,
             parse_error_count=self._parse_error_count,
             io_error_count=self._io_error_count,
+            non_trace_count=self._non_trace_count,
+        )
+
+    def status(self) -> SourceStatus:
+        """`TraceSource.status()` (Task 22). `method_id`/`label`/
+        `events_received`/`events_ignored` are left at their zero-ish
+        placeholders -- `RuntimeChannel.source_statuses()` always
+        overwrites those four; only `state`/`detail` are this source's own
+        to report."""
+        state: Literal["waiting", "running"] = "waiting" if self._state == "waiting_for_file" else "running"
+        return SourceStatus(
+            method_id="",
+            label="",
+            state=state,
+            detail=str(self._path),
+            events_received=0,
+            events_ignored=0,
         )
 
     async def start(self) -> None:
         if self._reader_task is not None:
             raise RuntimeError("FileTailTraceSource is already started")
         self._stop_event.clear()
+        self._state = "waiting_for_file"
         self._reader_task = asyncio.create_task(self._read_loop())
 
     async def stop(self) -> None:
@@ -241,16 +311,29 @@ class FileTailTraceSource:
                 await handle.close()
 
     async def _open_when_available(self) -> aiofiles.threadpool.binary.AsyncBufferedIOBase:
+        # Whether the path was ALREADY there on the very first check, before
+        # any waiting -- Task 21 Fix 1. Only that case means "there's a
+        # pre-existing log, and from_beginning=False means don't replay it."
+        # If we had to wait for the file to be created, everything in it was
+        # written during our own wait -- skipping to the end would silently
+        # drop a burst the target wrote between creating the file and our
+        # next poll (up to `_MISSING_FILE_POLL_SECONDS`), which is exactly
+        # what let a whole demo run vanish with the file not yet existing.
+        existed_before_waiting = await asyncio.to_thread(self._path.exists)
         while not await asyncio.to_thread(self._path.exists):
             await asyncio.sleep(_MISSING_FILE_POLL_SECONDS)
         handle = await aiofiles.open(self._path, "rb")
-        if not self._from_beginning:
+        self._state = "tailing"
+        if existed_before_waiting and not self._from_beginning:
             await handle.seek(0, 2)  # SEEK_END -- only new events from here on.
         return handle
 
     def _handle_line(self, raw_line: bytes) -> None:
         stripped = raw_line.strip()
         if not stripped:
+            return
+        if not _looks_like_trace_event(stripped):
+            self._non_trace_count += 1
             return
         try:
             event = TraceEvent.model_validate_json(stripped)

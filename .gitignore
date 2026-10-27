@@ -42,6 +42,11 @@ htmlcov/
 coverage/
 
 # ---------------------------------------------------------------------------
+# Simulator manifests — real Mongo ObjectIds, differ per developer's local seed
+# ---------------------------------------------------------------------------
+mock-agent-project/simulator/manifest.json
+
+# ---------------------------------------------------------------------------
 # Virtual envs / secrets
 # ---------------------------------------------------------------------------
 .venv/
@@ -50,6 +55,15 @@ env/
 .env
 .env.*
 !.env.example
+
+# apv_trace's plain_project fixture (task 18) intentionally has a REAL
+# file nested under a directory literally named `.venv/lib/` -- it's what
+# proves FunctionTracer's virtualenv-directory filter works. Git won't
+# apply a file-level negation inside a directory it already ignored, so
+# the directory itself needs negating too.
+!packages/apv_trace/tests/fixtures/plain_project/.venv/
+!packages/apv_trace/tests/fixtures/plain_project/.venv/lib/
+!packages/apv_trace/tests/fixtures/plain_project/.venv/lib/fake_lib.py
 
 # ---------------------------------------------------------------------------
 # Rust / Tauri

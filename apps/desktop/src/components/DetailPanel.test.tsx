@@ -13,7 +13,7 @@ const NODE: GraphNode = {
 };
 
 beforeEach(() => {
-  useRuntimeStore.setState({ states: {}, deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 } });
+  useRuntimeStore.setState({ states: {}, deadLetterStats: { count: 0, dropped: 0, parseErrors: 0, nonTrace: 0, eventsResolved: 0, sources: [] } });
 });
 
 describe("DetailPanel runtime section", () => {
@@ -24,8 +24,17 @@ describe("DetailPanel runtime section", () => {
 
   it("does not show a Runtime section when the node is idle", () => {
     useRuntimeStore.setState({
-      states: { [NODE.id]: { status: "idle", runCount: 2, errorCount: 0, lastError: null } },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      states: {
+        [NODE.id]: {
+          status: "idle",
+          runCount: 2,
+          errorCount: 0,
+          lastError: null,
+          lastEndedAt: null,
+          flashSeq: 0,
+        },
+      },
+      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0, nonTrace: 0, eventsResolved: 0, sources: [] },
     });
     render(<DetailPanel node={NODE} onClose={vi.fn()} />);
     expect(screen.queryByText("Runtime")).toBeNull();
@@ -33,8 +42,17 @@ describe("DetailPanel runtime section", () => {
 
   it("shows the Runtime section with status/run count/error count when active", () => {
     useRuntimeStore.setState({
-      states: { [NODE.id]: { status: "active", runCount: 4, errorCount: 0, lastError: null } },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      states: {
+        [NODE.id]: {
+          status: "active",
+          runCount: 4,
+          errorCount: 0,
+          lastError: null,
+          lastEndedAt: null,
+          flashSeq: 0,
+        },
+      },
+      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0, nonTrace: 0, eventsResolved: 0, sources: [] },
     });
     render(<DetailPanel node={NODE} onClose={vi.fn()} />);
 
@@ -56,9 +74,11 @@ describe("DetailPanel runtime section", () => {
             traceback: "Traceback...\nRuntimeError: simulated triage failure",
             at: "2026-01-01T00:00:00Z",
           },
+          lastEndedAt: "2026-01-01T00:00:00Z",
+          flashSeq: 1,
         },
       },
-      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0 },
+      deadLetterStats: { count: 0, dropped: 0, parseErrors: 0, nonTrace: 0, eventsResolved: 0, sources: [] },
     });
     render(<DetailPanel node={NODE} onClose={vi.fn()} />);
 

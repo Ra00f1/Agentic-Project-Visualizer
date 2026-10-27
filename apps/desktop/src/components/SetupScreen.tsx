@@ -45,7 +45,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CollectionMappingEntry, CollectionSchema } from "@shared-types/graph";
-import { fetchSchema } from "../api";
+import type { MethodConfigEntry, SourceStatus } from "@shared-types/runtime";
+import { fetchSchema, putRuntimeConfig } from "../api";
+import { RUNTIME_METHODS_STORAGE_KEY, TracingMethods } from "./setup/TracingMethods";
 
 /** Every role a collection can play in the visualizer. Mirror of
  *  CollectionRole in @shared-types/graph. */
@@ -166,6 +168,15 @@ export function SetupScreen({
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [mappings, setMappings] = useState<Record<string, CollectionMappingEntry>>({});
+
+  // Runtime tracing (Task 22): TracingMethods owns the method list, each
+  // one's checked state and settings, and reports the current
+  // `[{id, settings}]` list here via onChange. Only used at Continue time
+  // (save + PUT) -- see handleContinue below.
+  const [tracingEntries, setTracingEntries] = useState<MethodConfigEntry[]>([]);
+  const [tracingPutError, setTracingPutError] = useState<string | null>(null);
+  const [tracingSources, setTracingSources] = useState<SourceStatus[] | null>(null);
+  const [continuing, setContinuing] = useState(false);
 
   const debounceRef = useRef<number | null>(null);
   const load = useCallback(async () => {
@@ -305,7 +316,38 @@ export function SetupScreen({
     return VITAL_ROLES.filter((r) => !mapped.has(r));
   }, [selected, mappings]);
 
-  const canContinue = status === "ready" && totalSelected > 0;
+  const canContinue = status === "ready" && totalSelected > 0 && !continuing;
+
+  // Task 22's own Design, "On Continue, the existing flow runs, plus":
+  //   1. Save the checked methods to localStorage.
+  //   2. PUT /runtime/config with that list.
+  // A 422 (bad request -- unknown/duplicate id, or a setting that fails
+  // that method's own schema) keeps Setup open with the error surfaced
+  // via TracingMethods' putErrorMessage prop. A 200 with a source in
+  // `state: "error"` (e.g. a bad path) does NOT block Continue -- the
+  // graph still loads, and RuntimeStatusChip shows the error from there;
+  // `tracingSources` is passed down so the offending row still shows its
+  // detail if the user comes back to Setup.
+  const handleContinue = useCallback(async () => {
+    setTracingPutError(null);
+    setContinuing(true);
+    try {
+      localStorage.setItem(RUNTIME_METHODS_STORAGE_KEY, JSON.stringify(tracingEntries));
+    } catch {
+      // localStorage full/blocked -- non-fatal, the PUT below still
+      // applies this session's choice; it just won't survive a restart.
+    }
+    try {
+      const result = await putRuntimeConfig({ methods: tracingEntries });
+      setTracingSources(result.sources);
+    } catch (err) {
+      setTracingPutError(err instanceof Error ? err.message : String(err));
+      setContinuing(false);
+      return; // stay on Setup so the error is visible
+    }
+    setContinuing(false);
+    onSubmit({ uri, db, collections: [...selected], codebaseRoot, collectionMapping: mappings });
+  }, [tracingEntries, uri, db, selected, codebaseRoot, mappings, onSubmit]);
 
   return (
     <div className="flex h-screen w-screen items-start justify-center overflow-auto bg-neutral-50 px-4 py-10 dark:bg-neutral-950">
@@ -357,6 +399,20 @@ export function SetupScreen({
               />
             </label>
           </div>
+        </section>
+
+        <section className="mb-6 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+          <h2 className="mb-1 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            Runtime tracing
+          </h2>
+          <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+            Optional — glows nodes as your traced program runs them. Off unless you turn a method on below.
+          </p>
+          <TracingMethods
+            onChange={setTracingEntries}
+            putErrorMessage={tracingPutError}
+            sourceStatuses={tracingSources}
+          />
         </section>
 
         <section className="mb-6 rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
@@ -472,18 +528,10 @@ export function SetupScreen({
             Reload
           </button>
           <button
-            onClick={() =>
-              onSubmit({
-                uri,
-                db,
-                collections: [...selected],
-                codebaseRoot,
-                collectionMapping: mappings,
-              })
-            }
+            onClick={() => void handleContinue()}
             disabled={!canContinue}
             title={
-              !canContinue
+              status !== "ready" || totalSelected === 0
                 ? "Select at least one collection before continuing."
                 : missingVital.length > 0
                   ? `Warning: no collection is mapped to ${missingVital.join(", ")}.`
@@ -491,7 +539,7 @@ export function SetupScreen({
             }
             className="rounded bg-neutral-900 px-4 py-1.5 text-sm text-white disabled:opacity-40 dark:bg-neutral-100 dark:text-neutral-900"
           >
-            Continue →
+            {continuing ? "Continuing…" : "Continue →"}
           </button>
         </div>
       </div>

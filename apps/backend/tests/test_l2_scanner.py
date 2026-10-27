@@ -26,19 +26,26 @@ FIXTURE_ROOT = Path(__file__).parents[3] / "mock-agent-project"
 
 # Fixture counts. Update alongside dump.json.
 #
-#   12 tools total in the DB.
-#   10 resolve to a function node + implements edge:
-#      -  9 via the direct dotted-path lookup.
-#      -  1 (`moved_tool`) via the name-based fallback — its Mongo
-#         `import_path` is stale but the function still exists under
-#         `src/skills/formatting.py`.
-#    2 stay unresolved (neither direct nor fallback finds them):
-#      - missing_impl_tool  (module exists, function doesn't AND no
-#                            function anywhere else matches the name)
-#      - phantom_module_tool (module doesn't exist AND no matching name)
-EXPECTED_FUNCTION_NODES = 10
-EXPECTED_IMPLEMENTS_EDGES = 10
-EXPECTED_L2_ERRORS = 2
+# Reconciled 2026-10-06 (Task 10) against a fresh seed — 78 tools total now
+# (was 12 when these constants were last hand-derived in Tasks 1-4), and
+# the fixture's codebase (mock-agent-project/src/) grew the same "edge case
+# tools" distractor set documented in its own README's "Broken references"
+# section.
+#
+#   78 tools total in the DB.
+#   69 `implements` edges resolve (68 distinct function nodes — one function,
+#      `internal_search_tool`, is implemented by TWO tools that both
+#      resolve to it by name: `internal_search` and `framework_null_tool`,
+#      the latter deliberately has a null `framework` field per the
+#      fixture's own "missing / null / weird metadata" edge cases).
+#    9 stay unresolved — each confirmed (git-blame-style, by reading the
+#      fixture's own README) to be an intentional distractor, not scanner
+#      drift: missing_impl_tool, phantom_module_tool, classtool_load,
+#      classtool_parse_static, lambda_add_one, missing_impl_alpha/beta/
+#      gamma/delta. 69 resolved + 9 unresolved == 78 total tools.
+EXPECTED_FUNCTION_NODES = 68
+EXPECTED_IMPLEMENTS_EDGES = 69
+EXPECTED_L2_ERRORS = 9
 
 
 @pytest_asyncio.fixture

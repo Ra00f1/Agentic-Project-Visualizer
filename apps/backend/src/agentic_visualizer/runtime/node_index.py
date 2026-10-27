@@ -1,6 +1,6 @@
 """NodeIndex — resolves a `TraceEvent` to the graph node(s) it belongs to.
 
-Six strategies, tried in order (see `resolve`). Built once per `Graph`
+Seven strategies, tried in order (see `resolve`). Built once per `Graph`
 (`NodeIndex.build`), swapped atomically under a lock by `RuntimeChannel`
 whenever a fresh graph is available (see that module for why "fresh graph
 available" means "a /graph call happened" in this codebase, not a
@@ -45,7 +45,7 @@ ResolveResult = Resolved | Unresolved
 
 
 class NodeIndex:
-    """Six lookup dicts, one per resolution strategy, built once from a `Graph`."""
+    """Seven lookup dicts, one per resolution strategy, built once from a `Graph`."""
 
     def __init__(
         self,
@@ -56,6 +56,7 @@ class NodeIndex:
         by_tool_fn: dict[tuple[str, str], str],
         fn_to_tools: dict[str, list[str]],
         by_typed_name: dict[tuple[str, str], list[str]],
+        models_by_casefold_name: dict[str, list[str]],
     ) -> None:
         self.by_db_id = by_db_id
         self.by_framework_id = by_framework_id
@@ -63,6 +64,7 @@ class NodeIndex:
         self.by_tool_fn = by_tool_fn
         self.fn_to_tools = fn_to_tools
         self.by_typed_name = by_typed_name
+        self.models_by_casefold_name = models_by_casefold_name
 
     @classmethod
     def build(cls, graph: Graph) -> NodeIndex:
@@ -71,6 +73,7 @@ class NodeIndex:
         by_module_qualname: dict[tuple[str, str, str], str] = {}
         by_tool_fn: dict[tuple[str, str], str] = {}
         by_typed_name: dict[tuple[str, str], list[str]] = {}
+        models_by_casefold_name: dict[str, list[str]] = {}
 
         for node in graph.nodes:
             by_typed_name.setdefault((node.type, node.name), []).append(node.id)
@@ -94,6 +97,9 @@ class NodeIndex:
                 if fn_key is not None:
                     by_tool_fn[fn_key] = node.id
 
+            if node.type == "model":
+                models_by_casefold_name.setdefault(node.name.casefold(), []).append(node.id)
+
         fn_to_tools = _build_fn_to_tools(graph.edges)
 
         return cls(
@@ -103,6 +109,7 @@ class NodeIndex:
             by_tool_fn=by_tool_fn,
             fn_to_tools=fn_to_tools,
             by_typed_name=by_typed_name,
+            models_by_casefold_name=models_by_casefold_name,
         )
 
     def resolve(self, event: TraceEvent) -> ResolveResult:
@@ -115,13 +122,23 @@ class NodeIndex:
             return Resolved([nid], strategy="framework_id")
 
         if ref.qualname and (nid := self.by_module_qualname.get((event.kind, ref.module, ref.qualname))):
-            node_ids = [nid]
             # Bridge: the function this event directly names, plus any tool
             # that implements it -- lights up the tool even though only the
             # underlying function was instrumented. `fn_to_tools` already
             # excludes functions with more than one implementing tool (see
             # _build_fn_to_tools) so this never bridges to an unrelated tool.
-            node_ids.extend(self.fn_to_tools.get(nid, []))
+            #
+            # Task 18's `--no-bridge`: a function already reported as a
+            # tool/agent span by something else (an OpenInference
+            # instrumentor, or a raw `apv.kind=tool` span opened inside the
+            # function body) would otherwise count two runs per call once
+            # `apv-run --functions` ALSO reports the same call as a plain
+            # function event. `meta.bridge is False` is the function
+            # tracer's own escape hatch for that -- skip the extension and
+            # report the plain strategy instead.
+            if event.meta.get("bridge") is False:
+                return Resolved([nid], strategy="module_qualname")
+            node_ids = [nid, *self.fn_to_tools.get(nid, [])]
             return Resolved(node_ids, strategy="module_qualname+bridge")
 
         if event.kind == "tool" and (nid := self.by_tool_fn.get((ref.name, ref.module))):
@@ -132,17 +149,63 @@ class NodeIndex:
             return Resolved(matches, strategy="typed_name")
         if len(matches) > 1:
             return Unresolved(f"ambiguous name: {len(matches)} candidates for ({event.kind}, {ref.name})")
+
+        if event.kind == "model":
+            prefix_result = self._resolve_model_prefix(ref.name)
+            if prefix_result is not None:
+                return prefix_result
+
         return Unresolved(f"no node matches ref={ref!r} kind={event.kind}")
+
+    def _resolve_model_prefix(self, ref_name: str) -> ResolveResult | None:
+        """Match a dated model id (`claude-sonnet-4-20250514`) to the short
+        DB name (`claude-sonnet-4`) it's a dated snapshot of -- tried only
+        after an exact `typed_name` match has already failed (see `resolve`).
+
+        A candidate's casefolded name must equal `ref_name`'s, or be a
+        prefix of it immediately followed by `-` -- that dash boundary is
+        what stops `claude-sonnet-4` from matching `claude-sonnet-45`
+        (a different, unrelated model). Among all matching candidates, the
+        LONGEST name wins (`gpt-4o-mini` over `gpt-4o` for an id starting
+        with "gpt-4o-mini-"), since a longer name is the more specific
+        match. `None` means no candidate matched at all -- the caller
+        falls through to the generic "no node matches" `Unresolved`, not a
+        model-specific one, so dead letters stay easy to tell apart by
+        their own message.
+        """
+        target = ref_name.casefold()
+        best_name: str | None = None
+        for candidate_name in self.models_by_casefold_name:
+            is_match = candidate_name == target or target.startswith(candidate_name + "-")
+            if is_match and (best_name is None or len(candidate_name) > len(best_name)):
+                best_name = candidate_name
+        if best_name is None:
+            return None
+
+        node_ids = self.models_by_casefold_name[best_name]
+        if len(node_ids) > 1:
+            return Unresolved(f"ambiguous model prefix: {len(node_ids)} nodes named {best_name!r}")
+        return Resolved(node_ids, strategy="model_prefix")
 
 
 def _db_id_of(node: Node) -> str | None:
-    """The raw DB-native id embedded in a mongo-sourced node's `id`.
+    """The raw DB-native id a target project's `TraceRef.db_id` would carry
+    for this node.
 
-    `Node.id` format for mongo-sourced nodes is `mongo:<db>.<collection>:<oid>`
-    (see `domain/node.py`) -- the trailing segment is exactly the id a target
-    project's own DB record would carry, which is what `TraceRef.db_id` is
-    meant to be populated with by a DB-seeded target project.
+    Prefers `node.attributes["db_id"]`, set explicitly by whichever scanner
+    produced the node (every connector can set this -- it's not Mongo-
+    specific) -- see `scanners.l1_entity`'s `Node(...)` construction for the
+    Mongo case. Falls back to parsing it out of `Node.id` ONLY when that
+    attribute is absent: `Node.id` format for mongo-sourced nodes is
+    `mongo:<db>.<collection>:<oid>` (see `domain/node.py`), and the trailing
+    segment IS that same id. This fallback exists so fixtures/graphs built
+    before scanners wrote `attributes["db_id"]` explicitly keep resolving
+    without a re-scan; new connectors should rely on the attribute, not this
+    parse.
     """
+    db_id = node.attributes.get("db_id")
+    if isinstance(db_id, str) and db_id:
+        return db_id
     if not node.id.startswith("mongo:"):
         return None
     _, _, oid = node.id.rpartition(":")

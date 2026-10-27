@@ -347,6 +347,27 @@ class L1EntityScanner:
         # the warnings banner.
         scanned_collections = set(self._mapping.keys())
         unresolved_ref_counts: dict[tuple[str, str, str], int] = {}
+        # Refs whose target collection IS in the mapping but is LAZY (its
+        # docs are never streamed into `nodes` -- see effective_lazy below).
+        # Separate from unresolved_ref_counts: this isn't "collection not
+        # scanned," it's "collection's nodes are fetched on demand," a
+        # different, non-broken situation that still shouldn't be validated
+        # against `nodes` by `_resolve_candidate_edges`.
+        lazy_ref_counts: dict[tuple[str, str, str], int] = {}
+
+        # Edges whose target collection IS scanned, held back until every
+        # node is built so a ref to a document that doesn't actually exist
+        # (not merely "collection wasn't scanned" -- see unresolved_ref_counts
+        # above) can be validated instead of silently becoming a dangling
+        # edge. Fixture coverage: mock-agent-project's `broken_model_ref_agent`/
+        # `broken_tool_ref_agent` (see its README's "Broken references"
+        # section -- "L1 should surface as unresolved"). Deferred rather than
+        # checked inline because a doc can reference another collection that
+        # the outer loop hasn't reached yet (dict iteration order isn't a
+        # dependency order); validating only after every collection has been
+        # scanned works regardless of mapping order.
+        candidate_edges: list[tuple[Edge, str, str, str, str]] = []
+        """(edge, source_collection, field, target_collection, target_node_id)."""
 
         # Compute the effective set of lazy collections: hardcoded ones
         # PLUS anything auto-detected from the actual schema. This is
@@ -407,13 +428,19 @@ class L1EntityScanner:
                         )
                     )
 
+                # `db_id` explicit on attributes (not just embedded in
+                # node_id's "mongo:<db>.<collection>:<oid>" format) so
+                # `runtime.node_index._db_id_of` has a connector-agnostic
+                # signal to read -- see that function's docstring.
+                attributes = _sanitize_attributes(doc, spec.id_field)
+                attributes["db_id"] = str(doc_id)
                 nodes.append(
                     Node(
                         id=node_id,
                         type=spec.node_type,
                         name=str(name),
                         provenance=provenance,
-                        attributes=_sanitize_attributes(doc, spec.id_field),
+                        attributes=attributes,
                     )
                 )
 
@@ -432,6 +459,23 @@ class L1EntityScanner:
                             )
                         continue
 
+                    # Ref target IS in the mapping but is a LAZY collection —
+                    # its documents are never streamed into `nodes` here (see
+                    # the lazy-enrichment step below), so there is no node id
+                    # `_resolve_candidate_edges` could ever validate this
+                    # against. Without this check every such ref would be
+                    # misreported as a genuinely broken reference (no
+                    # document found) when the real story is "this
+                    # collection's nodes are fetched on demand, not eagerly."
+                    # Same bucket/shape as the unscanned-collection case
+                    # above, distinct message.
+                    if ref.target_collection in effective_lazy:
+                        values = list(_iter_ref_values(doc.get(ref.field)))
+                        if values:
+                            key = (collection_name, ref.field, ref.target_collection)
+                            lazy_ref_counts[key] = lazy_ref_counts.get(key, 0) + len(values)
+                        continue
+
                     for target_oid in _iter_ref_values(doc.get(ref.field)):
                         target_id = _node_id(self._db_name, ref.target_collection, target_oid)
                         # `ref.inverted` (declared on the RefSpec) tells us
@@ -441,15 +485,29 @@ class L1EntityScanner:
                         source_id, dest_id = (
                             (target_id, node_id) if ref.inverted else (node_id, target_id)
                         )
-                        edges.append(
-                            Edge(
-                                source_id=source_id,
-                                target_id=dest_id,
-                                kind=ref.kind,
-                                provenance=provenance,
-                                attributes={"via_field": ref.field},
+                        candidate_edges.append(
+                            (
+                                Edge(
+                                    source_id=source_id,
+                                    target_id=dest_id,
+                                    kind=ref.kind,
+                                    provenance=provenance,
+                                    attributes={"via_field": ref.field},
+                                ),
+                                collection_name,
+                                ref.field,
+                                ref.target_collection,
+                                target_id,
                             )
                         )
+
+        # Every node from every collection now exists -- resolve the held-back
+        # candidate edges. See `_resolve_candidate_edges`'s own docstring.
+        resolved_edges, broken_ref_errors = _resolve_candidate_edges(
+            candidate_edges, node_ids={n.id for n in nodes}, scanner_name=self.name, db_name=self._db_name
+        )
+        edges.extend(resolved_edges)
+        errors.extend(broken_ref_errors)
 
         # --- Lazy-collection enrichment (Slice B2) --------------------------
         # For every (lazy_collection, foreign_key, parent_collection) triple
@@ -503,11 +561,70 @@ class L1EntityScanner:
                     ),
                 )
             )
+        # Same, for refs into a LAZY collection -- informational, not broken:
+        # those nodes are fetched on demand (GET /graph/subtree), not eagerly,
+        # so there's nothing wrong here, just something the eager graph can't
+        # show as a direct edge yet.
+        for (col, field, target), count in lazy_ref_counts.items():
+            errors.append(
+                ScanError(
+                    scanner=self.name,
+                    source_ref=f"{self._db_name}.{col}.{field}",
+                    message=(
+                        f"{count} edge(s) to lazy collection {target!r} skipped "
+                        f"(its nodes are fetched on demand, not eagerly)."
+                    ),
+                )
+            )
 
         return ScanResult(scanner=self.name, nodes=nodes, edges=edges, errors=errors)
 
 
 # --- Helpers ---------------------------------------------------------------
+
+
+def _resolve_candidate_edges(
+    candidate_edges: list[tuple[Edge, str, str, str, str]],
+    *,
+    node_ids: set[str],
+    scanner_name: str,
+    db_name: str,
+) -> tuple[list[Edge], list[ScanError]]:
+    """Split `candidate_edges` into real edges vs. genuinely broken references.
+
+    `candidate_edges` are edges into SCANNED collections, held back by
+    `scan()` until every node exists (dict iteration order isn't a
+    dependency order, so a doc can reference a collection the outer loop
+    hasn't reached yet). A target id that isn't among `node_ids` means the
+    collection was scanned but that specific document doesn't exist --
+    fixture coverage: mock-agent-project's `broken_model_ref_agent`/
+    `broken_tool_ref_agent` (its README's "Broken references" section says
+    "L1 should surface as unresolved"). Surfaced the same way an
+    unscanned-collection ref already is (an aggregated ScanError per
+    (collection, field, target_collection) triple), rather than as an edge
+    pointing at a node that was never created.
+    """
+    edges: list[Edge] = []
+    broken_ref_counts: dict[tuple[str, str, str], int] = {}
+    for candidate_edge, source_collection, field, target_collection, target_id in candidate_edges:
+        if target_id in node_ids:
+            edges.append(candidate_edge)
+            continue
+        key = (source_collection, field, target_collection)
+        broken_ref_counts[key] = broken_ref_counts.get(key, 0) + 1
+
+    errors = [
+        ScanError(
+            scanner=scanner_name,
+            source_ref=f"{db_name}.{col}.{field}",
+            message=(
+                f"{count} reference(s) in {col}.{field!r} point to a "
+                f"{target!r} document that doesn't exist. Edge(s) skipped."
+            ),
+        )
+        for (col, field, target), count in broken_ref_counts.items()
+    ]
+    return edges, errors
 
 
 def _iter_ref_values(value: Any) -> Iterable[ObjectId | str]:
@@ -519,8 +636,10 @@ def _iter_ref_values(value: Any) -> Iterable[ObjectId | str]:
       * `None` (unset reference — yield nothing, no error).
 
     Anything else (a string, a dict) is coerced to string and yielded as-is,
-    so a broken fixture doesn't crash the scanner — it just produces a
-    dangling edge the merger surfaces.
+    so a broken fixture doesn't crash the scanner — `_resolve_candidate_edges`
+    catches it downstream as a reference to a document that doesn't exist
+    (a coerced garbage value won't match any real node id) and surfaces a
+    ScanError instead of a dangling edge.
     """
     if value is None:
         return

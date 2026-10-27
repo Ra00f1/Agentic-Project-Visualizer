@@ -42,7 +42,17 @@ def _raw_event(span_id: str, name: str = "some_tool", *, phase: str = "start") -
 
 
 def _line(span_id: str, name: str = "some_tool") -> bytes:
-    return json.dumps(_raw_event(span_id, name)).encode("utf-8") + b"\n"
+    return _compact_json(_raw_event(span_id, name)) + b"\n"
+
+
+def _compact_json(obj: Any) -> bytes:
+    """No-whitespace JSON, matching apv_trace's real `orjson.dumps` wire
+    format (`{"v":1,...`) -- the file-tailer's pre-filter (`_looks_like_trace_event`)
+    specifically checks for `"v":1` with no space after the colon, so a test
+    fixture built with stdlib `json.dumps`'s default (space-after-colon)
+    separators would get silently rejected as non-trace noise before ever
+    reaching the Pydantic parse this suite is testing."""
+    return json.dumps(obj, separators=(",", ":")).encode("utf-8")
 
 
 async def _next_event(gen: Any, timeout: float = 1.0) -> TraceEvent:
@@ -112,6 +122,57 @@ async def test_waits_for_not_yet_existing_file(tmp_path: Path) -> None:
         gen = source.events()
         event = await _next_event(gen, timeout=1.5)
         assert event.span_id == "created-later"
+    finally:
+        await source.stop()
+
+
+@pytest.mark.asyncio
+async def test_a_burst_written_right_after_a_missing_file_appears_is_not_dropped(tmp_path: Path) -> None:
+    """Task 21 Fix 1 -- the repro that found this bug: start tailing a path
+    that doesn't exist yet (default `from_beginning=False`, matching the
+    production call site at `main.py`'s `_lifespan`), then create the file
+    and write a whole burst of lines in one shot, with no pause for the
+    tailer's poll to catch up. Before the fix, `_open_when_available` always
+    seeked to EOF once the file appeared -- which, by the time it ran, was
+    already past this burst, so every line vanished (confirmed empirically:
+    0 of 34 events received). All 34 must now arrive."""
+    path = tmp_path / "trace.jsonl"
+    assert not path.exists()
+
+    source = FileTailTraceSource(path)  # from_beginning NOT set -- the real default
+    await source.start()
+    try:
+        await asyncio.sleep(0.3)  # let the tailer start waiting for the file
+        state_before = source.state
+        assert state_before == "waiting_for_file"
+
+        path.write_bytes(b"".join(_line(str(i)) for i in range(34)))
+
+        gen = source.events()
+        received = [await _next_event(gen, timeout=1.0) for _ in range(34)]
+        assert [e.span_id for e in received] == [str(i) for i in range(34)]
+        state_after = source.state
+        assert state_after == "tailing"
+        assert source.path == path
+    finally:
+        await source.stop()
+
+
+@pytest.mark.asyncio
+async def test_state_is_tailing_immediately_for_a_pre_existing_file(tmp_path: Path) -> None:
+    path = tmp_path / "trace.jsonl"
+    path.write_bytes(b"")
+
+    source = FileTailTraceSource(path)
+    await source.start()
+    try:
+        # No poll/sleep needed: the file already existed, so the reader
+        # doesn't go through the waiting-for-file loop at all.
+        for _ in range(20):
+            if source.state == "tailing":
+                break
+            await asyncio.sleep(0.02)
+        assert source.state == "tailing"
     finally:
         await source.stop()
 
@@ -224,7 +285,39 @@ async def test_skips_malformed_json_lines(tmp_path: Path) -> None:
         gen = source.events()
         event = await _next_event(gen)
         assert event.span_id == "valid-one"
-        assert source.stats().parse_error_count == 1
+        assert source.stats().parse_error_count == 0  # pre-filter catches this one -- see below
+        assert source.stats().non_trace_count == 1
+    finally:
+        await source.stop()
+
+
+@pytest.mark.asyncio
+async def test_non_trace_lines_are_counted_separately_from_parse_errors(tmp_path: Path) -> None:
+    """Task 9 Scope A: a target project that mixes stdlib `logging`/`print()`
+    output into the same file shouldn't inflate `parse_error_count` -- that
+    counter is reserved for lines that LOOKED like our wire format (passed
+    the cheap `{...\"v\":1...}` pre-filter) but failed schema validation,
+    which is the actionable "something's wrong with MY emitter" signal.
+    Plain log noise is normal and goes in `non_trace_count` instead."""
+    path = tmp_path / "trace.jsonl"
+    stdlib_log_line = b"2026-09-30 12:00:00 INFO myapp.worker: handling request\n"
+    print_line = b"Starting up...\n"
+    # Looks like our format (starts with `{`, has `"v":1` up front) but is
+    # missing required fields -- THIS one must count as a parse error, not
+    # non-trace noise.
+    broken_trace_line = b'{"v":1,"not":"a valid trace event"}\n'
+
+    path.write_bytes(stdlib_log_line + print_line + broken_trace_line + _line("valid-one"))
+
+    source = FileTailTraceSource(path, from_beginning=True)
+    await source.start()
+    try:
+        gen = source.events()
+        event = await _next_event(gen)
+        assert event.span_id == "valid-one"
+        stats = source.stats()
+        assert stats.non_trace_count == 2  # the stdlib log line + the print line
+        assert stats.parse_error_count == 1  # the broken-but-trace-shaped line
     finally:
         await source.stop()
 
@@ -267,7 +360,7 @@ async def test_stop_is_idempotent(tmp_path: Path) -> None:
 async def test_handles_crlf_line_endings(tmp_path: Path) -> None:
     """CLAUDE.md §11: test both line endings -- Windows-first project."""
     path = tmp_path / "trace.jsonl"
-    line_without_terminator = json.dumps(_raw_event("crlf-test")).encode("utf-8")
+    line_without_terminator = _compact_json(_raw_event("crlf-test"))
     path.write_bytes(line_without_terminator + b"\r\n")
 
     source = FileTailTraceSource(path, from_beginning=True)

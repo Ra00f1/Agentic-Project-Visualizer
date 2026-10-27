@@ -4,9 +4,18 @@ version = "0.1.0"
 description = "Small, actually-runnable fixture for exercising the Agentic Project Visualizer's runtime-tracing overlay. Not the golden static-scanning fixture — see ../mock-agent-project for that."
 requires-python = ">=3.11"
 dependencies = [
-    "ulid-py>=1.1.0",
-    "orjson>=3.10.0",
-    "platformdirs>=4.3.0",
+    "apv-trace",
+    # Direct now (task 14): runtime_demo/ itself imports `opentelemetry.trace`
+    # — it was only a transitive dependency via apv-trace before. Same pin
+    # range as apv_trace's own, so both resolve to one shared SDK version.
+    "opentelemetry-api>=1.27.0,<2.0.0",
+    # Task 23's OTLP-only demo (`run_demo_otel.py`) needs its own
+    # `TracerProvider`/`BatchSpanProcessor` and the standard HTTP exporter --
+    # `apv-trace` already pulls in `opentelemetry-sdk` transitively, but not
+    # the exporter, and listing both directly keeps this project's own entry
+    # points independent of apv-trace's internal dependency choices.
+    "opentelemetry-sdk>=1.27.0,<2.0.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.27.0,<2.0.0",
 ]
 
 # Not an installable package — just a runnable script tree, same spirit as
@@ -14,3 +23,21 @@ dependencies = [
 # works off this dependency list without needing a build backend.
 [tool.uv]
 package = false
+
+# apv_trace moved to packages/apv_trace (task 8) — was vendored here as a
+# plain subdirectory before; now a path dependency to the shared package so
+# a feature added for mock-agent-project/simulator's needs (manifest
+# support, the `name`-parameter call-time override) doesn't have to be
+# hand-copied back here to avoid drifting. ulid-py/orjson/platformdirs are
+# now transitive via apv-trace, not listed directly above.
+[tool.uv.sources]
+apv-trace = { path = "../packages/apv_trace", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
