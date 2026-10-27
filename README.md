@@ -482,5 +482,4 @@ Planned, roughly in this order:
 
 ## License
 
-<!-- TODO: pick a license (e.g. MIT or Apache-2.0) and add a LICENSE file before making the repository public. -->
-Not decided yet.
+MIT — see [LICENSE](LICENSE).
